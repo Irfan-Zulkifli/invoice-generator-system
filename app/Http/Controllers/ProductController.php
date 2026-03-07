@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 use Yajra\DataTables\Html\Builder;
@@ -59,7 +60,9 @@ class ProductController extends Controller
             'Create' => route('products.create'),
         ];
 
-        return view('pages.products.create', compact('title', 'breadcrumbs'));
+        $product = new Product();
+
+        return view('pages.products.create', compact('title', 'breadcrumbs', 'product'));
     }
 
     /**

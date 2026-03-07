@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -12,6 +13,7 @@ Route::middleware('auth')->group(function () {
 
     // Products routes
     Route::resource('products', ProductController::class);
+    Route::resource('customers', CustomerController::class);
 });
 
 Route::post('/login-attempt', [AuthController::class, 'login'])->middleware('guest')->name('login.submit');
