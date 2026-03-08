@@ -29,7 +29,27 @@ class ProductController extends Controller
 
             return DataTables::of($products)
                 ->addColumn('actions', function ($product) {
-                    return '<a href="'.route('products.edit', $product).'" class="btn btn-success">Edit</a> <a href="'.route('products.destroy', $product).'" class="btn btn-danger">Delete</a>';
+                    $editUrl = route('products.edit', $product);
+                    $deleteUrl = route('products.destroy', $product);
+
+                    // Edit Button (Blue with icon)
+                    $editBtn = '<a href="'.$editUrl.'" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
+                                    <i class="bx bx-edit-alt"></i>
+                                </a>';
+                                
+                    // Delete Button (Red with icon, triggers JS)
+                    $deleteBtn = '<button type="button" onclick="deleteProduct('.$product->id.')" class="btn btn-sm btn-danger waves-effect waves-light" title="Delete">
+                                    <i class="bx bx-trash"></i>
+                                </button>';
+                                
+                    // Hidden Form for secure deletion
+                    $deleteForm = '<form id="delete-form-'.$product->id.'" action="'.$deleteUrl.'" method="POST" style="display: none;">
+                                        '.csrf_field().'
+                                        '.method_field('DELETE').'
+                                </form>';
+
+                    // Wrap them in a d-flex container with a gap
+                    return '<div class="d-flex align-items-center gap-2">'.$editBtn.$deleteBtn.$deleteForm.'</div>';
                 })
                 ->addIndexColumn()
                 ->rawColumns(['actions'])
@@ -150,6 +170,10 @@ class ProductController extends Controller
     {
         $product->delete();
 
-        return redirect()->route('products.index');
+        return response()->json([
+            'status' => true,
+            'message' => 'Product Deleted Successfully.',
+            'redirect' => route('products.index'),
+        ]);
     }
 }

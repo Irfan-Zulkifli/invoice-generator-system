@@ -17,16 +17,36 @@ class CustomerController extends Controller
         $title = 'Customers';
         $breadcrumbs = [
             'Home' => route('template'),
-            'Products' => route('customers.index'),
+            'Customers' => route('customers.index'),
         ];
         $button_create = '<a href="'.route('customers.create').'" class="btn btn-primary"><i class="fas fa-plus"></i> Add Customer</a>';
 
         if (request()->ajax()) {
-            $products = Customer::with('seller')->where('seller_id', auth()->id());
+            $customers = Customer::with('seller')->where('seller_id', auth()->id());
 
-            return DataTables::of($products)
-                ->addColumn('actions', function ($product) {
-                    return '<a href="'.route('customers.edit', $product).'" class="btn btn-success">Edit</a> <a href="'.route('customers.destroy', $product).'" class="btn btn-danger">Delete</a>';
+            return DataTables::of($customers)
+                ->addColumn('actions', function ($customer) {
+                    $editUrl = route('customers.edit', $customer);
+                    $deleteUrl = route('customers.destroy', $customer);
+
+                    // Edit Button (Blue with icon)
+                    $editBtn = '<a href="'.$editUrl.'" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
+                                    <i class="bx bx-edit-alt"></i>
+                                </a>';
+                                
+                    // Delete Button (Red with icon, triggers JS)
+                    $deleteBtn = '<button type="button" onclick="deleteCustomer('.$customer->id.')" class="btn btn-sm btn-danger waves-effect waves-light" title="Delete">
+                                    <i class="bx bx-trash"></i>
+                                </button>';
+                                
+                    // Hidden Form for secure deletion
+                    $deleteForm = '<form id="delete-form-'.$customer->id.'" action="'.$deleteUrl.'" method="POST" style="display: none;">
+                                        '.csrf_field().'
+                                        '.method_field('DELETE').'
+                                </form>';
+
+                    // Wrap them in a d-flex container with a gap
+                    return '<div class="d-flex align-items-center gap-2">'.$editBtn.$deleteBtn.$deleteForm.'</div>';
                 })
                 ->addIndexColumn()
                 ->rawColumns(['actions'])
@@ -42,7 +62,7 @@ class CustomerController extends Controller
         ])
             ->minifiedAjax();
 
-        return view('pages.products.index', compact('title', 'breadcrumbs', 'dataTable', 'button_create'));
+        return view('pages.customers.index', compact('title', 'breadcrumbs', 'dataTable', 'button_create'));
     }
 
     /**
@@ -67,10 +87,10 @@ class CustomerController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validate = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'nullable|email',
-            'phone' => 'nullable|string|max:9',
+            'phone' => 'nullable|string|max:10',
             'address' => 'nullable|string',
         ], [
             'name.required' => 'Customer name is required',
@@ -80,6 +100,12 @@ class CustomerController extends Controller
             'phone.max' => 'Phone Number cannot exceed 9 number. Exclude the "-" sign',
             'address.string' => 'String must be a string',
         ]);
+
+        $validate['seller_id'] = auth()->id();
+
+        Customer::create($validate);
+
+        return redirect()->route('customers.index');
     }
 
     /**
@@ -93,24 +119,53 @@ class CustomerController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Customer $customer)
     {
-        //
+        $title = 'Edit Customer';
+        $breadcrumbs = [
+            'Home' => route('template'),
+            'Customers' => route('customers.index'),
+            'Edit' => route('customers.edit', $customer),
+        ];
+
+        return view('pages.customers.create', compact('title', 'breadcrumbs', 'customer'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Customer $customer)
     {
-        //
+        $validate = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email',
+            'phone' => 'nullable|string|max:10',
+            'address' => 'nullable|string',
+        ], [
+            'name.required' => 'Customer name is required',
+            'name.string' => 'Customer name must be a string',
+            'name.max' => 'Customer name cannot exceed 255 characters',
+            'email.email' => 'Email must follow the email format',
+            'phone.max' => 'Phone Number cannot exceed 9 number. Exclude the "-" sign',
+            'address.string' => 'String must be a string',
+        ]);
+
+        $customer->update($validate);
+
+        return redirect()->route('customers.index');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Customer $customer)
     {
-        //
+        $customer->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Customer Deleted Successfully.',
+            'redirect' => route('customers.index'),
+        ]);
     }
 }
