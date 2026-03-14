@@ -15,22 +15,22 @@
                 </li>
 
                 <li>
-                    <a href="#" class="waves-effect">
-                        <i class="fas fa-file-invoice"></i>
-                        <span key="t-chat">Invoice</span>
+                    <a href="{{ route('sales.index') }}" class="waves-effect">
+                        <i class="bx bxs-chart"></i>
+                        <span key="t-chat">Sales</span>
                     </a>
                 </li>
 
-                <li>
+                <li class="{{ request()->routeIs('products.*') ? 'mm-active' : '' }}">
                     <a href="{{ route('products.index') }}" class="waves-effect">
-                        <i class="fas fa-shopping-basket"></i>
+                        <i class="bx bx-cart"></i>
                         <span key="t-chat">Product</span>
                     </a>
                 </li>
 
-                <li>
+                <li class="{{ request()->routeIs('customers.*') ? 'mm-active' : '' }}">
                     <a href="{{ route('customers.index') }}" class="waves-effect">
-                        <i class="fas fa-users"></i>
+                        <i class="bx bxs-user"></i>
                         <span key="t-chat">Customer</span>
                     </a>
                 </li>
