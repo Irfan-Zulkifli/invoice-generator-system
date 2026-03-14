@@ -9,7 +9,7 @@
             <ul class="metismenu list-unstyled" id="side-menu">
                 <li>
                     <a href="#" class="waves-effect">
-                        <i class="fas fa-home"></i>
+                        <i class="bx bx-home-circle"></i>
                         <span key="t-chat">Dashboard</span>
                     </a>
                 </li>
