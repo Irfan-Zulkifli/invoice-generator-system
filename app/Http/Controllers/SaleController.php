@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Customer;
 use App\Models\Sale;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
@@ -78,8 +79,9 @@ class SaleController extends Controller
         ];
 
         $sale = new Sale();
+        $existingCustomers = Customer::with('seller')->where('seller_id', auth()->id())->get();
 
-        return view('pages.sales.create', compact('title', 'breadcrumbs', 'sale'));
+        return view('pages.sales.create', compact('title', 'breadcrumbs', 'sale', 'existingCustomers'));
     }
 
     /**
