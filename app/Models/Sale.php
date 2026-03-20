@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use App\Models\Product;
+use App\Models\SaleItem;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Sale extends Model
 {
@@ -26,5 +29,13 @@ class Sale extends Model
 
     public function seller() {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function products(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class, 'sale_items', 'sale_id', 'product_id')
+                    ->using(SaleItem::class)
+                    ->withPivot(['quantity', 'unit_price', 'subtotal'])
+                    ->withTimeStamps();
     }
 }

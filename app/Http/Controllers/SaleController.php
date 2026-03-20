@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\Product;
 use App\Models\Sale;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
@@ -80,8 +81,9 @@ class SaleController extends Controller
 
         $sale = new Sale();
         $existingCustomers = Customer::with('seller')->where('seller_id', auth()->id())->get();
+        $products = Product::where('creator_id', auth()->id())->get();
 
-        return view('pages.sales.create', compact('title', 'breadcrumbs', 'sale', 'existingCustomers'));
+        return view('pages.sales.create', compact('title', 'breadcrumbs', 'sale', 'existingCustomers', 'products'));
     }
 
     /**
@@ -89,7 +91,7 @@ class SaleController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        dd($request);
     }
 
     /**

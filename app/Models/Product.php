@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Product extends Model
 {
@@ -21,5 +22,13 @@ class Product extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'creator_id');
+    }
+
+    public function Sale(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class)
+                    ->using(SaleItem::class, 'product_id', 'sale_id')
+                    ->withPivot(['quantity', 'unit_price', 'subtotal'])
+                    ->withTimeStamps();
     }
 }
