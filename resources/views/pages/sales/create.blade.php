@@ -93,12 +93,15 @@
                                     </template>
                                     <template id="existingCustomerTemplate">
                                         <label class="form-label">Customer</label>
-                                        <select class="form-control select2" name="customer_id">
+                                        <select class="form-control select2 @error('customer_id') is-invalid @enderror" name="customer_id">
                                             <option value="">Select Customer</option>
                                             @foreach ($existingCustomers as $customer)
-                                                <option value="{{ $customer->id }}">{{ $customer->name }} - {{ $customer->email }}</option>
+                                                <option value="{{ $customer->id }}" {{ (old('customer_id') == $customer->id ? 'selected' : '') }}>{{ $customer->name }} - {{ $customer->email }}</option>
                                             @endforeach
                                         </select>
+                                        @error('customer_id')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
                                     </template>
                                 </div>
                                 
@@ -109,57 +112,80 @@
                                     <div class="col-md-12">
                                         <div class="mb-3">
                                             <label class="">Product</label>
-                                            <div class="text-end">
+                                            <div class="text-end mb-3">
                                                 <button type="button" class="btn btn-primary waves-effect btn-label waves-light" onclick="addRowButton()"><i class="bx bx-plus-medical label-icon"></i> Add Product</button>
-
                                             </div>
-                                            <div class="table-responsive">
+                                            <div class="table-responsive table-bordered">
                                                 <table class="table mb-0">
                                                     <thead>
                                                         <tr>
-                                                            <th>#</th>
+                                                            {{-- <th>#</th> --}}
                                                             <th>Product</th>
                                                             <th>Total Unit</th>
                                                             <th>Action</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <th scope="row">1</th>
-                                                        <td>
-                                                            <select class="form-control select2" name="product_id[]">
-                                                                <option value="">Select Product</option>
-                                                                @foreach ($products as $product)
-                                                                    <option value="{{ $product->id }}">{{ $product->name }} - {{ $product->price }}</option>
-                                                                @endforeach
-                                                            </select>
-                                                        </td>
-                                                        <td>
-                                                            <input type="number" name="quantity[]" id="quantity" value="{{ old('quantity') }}" class="form-control">
-                                                        </td>
-                                                        <td>
-                                                            <button type="button" class="btn btn-danger waves-effect waves-light">
-                                                                <i class="bx bx-trash-alt"></i> 
-                                                            </button>
-                                                        </td>
+                                                        @if(old('product_id'))
+                                                            @foreach(old('product_id') as $index => $oldProductId)
+                                                                <tr>
+                                                                    {{-- <th scope="row">{{ $loop->iteration }}</th> --}}
+                                                                    <td>
+                                                                        {{-- Check for errors on this specific row index (e.g., product_id.0) --}}
+                                                                        <select class="form-control select2 @error("product_id.$index") is-invalid @enderror" name="product_id[]">
+                                                                            <option value="">Select Product</option>
+                                                                            @foreach ($products as $product)
+                                                                                <option value="{{ $product->id }}" {{ $oldProductId == $product->id ? 'selected' : '' }}>
+                                                                                    {{ $product->name }} - {{ $product->price }}
+                                                                                </option>
+                                                                            @endforeach
+                                                                        </select>
+                                                                        @error("product_id.$index")
+                                                                            <div class="invalid-feedback">{{ $message }}</div>
+                                                                        @enderror
+                                                                    </td>
+                                                                    <td>
+                                                                        {{-- Get the matching old quantity, check for errors on quantity.$index --}}
+                                                                        <input type="number" name="quantity[]" value="{{ old("quantity.$index") }}" class="form-control @error("quantity.$index") is-invalid @enderror" style="min-width: 80px;">
+                                                                        @error("quantity.$index")
+                                                                            <div class="invalid-feedback">{{ $message }}</div>
+                                                                        @enderror
+                                                                    </td>
+                                                                    <td>
+                                                                        <button type="button" class="btn btn-danger waves-effect waves-light" onclick="deleteRowButton(event)">
+                                                                            <i class="bx bx-trash-alt"></i> 
+                                                                        </button>
+                                                                    </td>
+                                                                </tr>
+                                                            @endforeach
+                                                        @endif
                                                     </tbody>
                                                 </table>
+                                                @error('product_id')
+                                                    @if($message == 'You are required to pick at least one product.')
+                                                        <div class="text-danger mt-2">{{ $message }}</div>
+                                                    @endif
+                                                @enderror
                                             </div>
                                             <template id="table-row-template">
                                                 <tr>
-                                                    <th scope="row"></th>
+                                                    {{-- <th scope="row"></th> --}}
                                                     <td>
-                                                        <select class="form-control select2" name="product_id[]">
+                                                        <select class="form-control select2 @error('product_id[]') is-invalid @enderror" name="product_id[]">
                                                             <option value="">Select Product</option>
                                                             @foreach ($products as $product)
                                                                 <option value="{{ $product->id }}">{{ $product->name }} - {{ $product->price }}</option>
                                                             @endforeach
                                                         </select>
+                                                        @error('product_id[]')
+                                                            <div class="invalid-feedback">{{ $message }}</div>
+                                                        @enderror
                                                     </td>
                                                     <td>
-                                                        <input type="number" name="quantity[]" id="quantity" value="{{ old('quantity') }}" class="form-control">
+                                                        <input type="number" name="quantity[]" value="" class="form-control @error('quantity[]') is-invalid @enderror" style="min-width: 80px;">
                                                     </td>
                                                     <td>
-                                                        <button type="button" class="btn btn-danger waves-effect waves-light">
+                                                        <button type="button" class="btn btn-danger waves-effect waves-light" onclick="deleteRowButton()">
                                                             <i class="bx bx-trash-alt"></i> 
                                                         </button>
                                                     </td>
@@ -178,6 +204,18 @@
             </div>
         </div>
     </div>
+    <style>
+        /* Make the Select2 box red if the hidden select is invalid */
+        .is-invalid + .select2-container--default .select2-selection--single {
+            border-color: #dc3545 !important;
+        }
+        
+        /* Optional: Add the red outline when the user clicks/focuses on it */
+        .is-invalid + .select2-container--default.select2-container--focus .select2-selection--single {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+        }
+    </style>
 @endsection
 @section('scripts')
     <script src="{{ asset('assets/libs/select2/js/select2.min.js') }}"></script>
@@ -219,13 +257,17 @@
                 // This dispatches a true native event, so event.target works perfectly
                 checkedRadio.dispatchEvent(new Event('change'));
             }
+            let tbody = document.querySelector('tbody');
+            if (tbody.rows.length === 0) {
+                addRowButton();
+            }
         });
 
         function addRowButton() {
             let tbody = document.querySelector('tbody');
             let template = document.getElementById('table-row-template');
             let clone = template.content.cloneNode(true);
-            clone.querySelector('th').textContent = tbody.rows.length + 1;
+            // clone.querySelector('th').textContent = tbody.rows.length + 1;
             tbody.appendChild(clone);
             let newSelect = tbody.querySelector('tr:last-child .select2');
             $(newSelect).select2({
@@ -233,6 +275,11 @@
                 allowClear: true,
                 width: '100%'
             });      
+        }
+
+        function deleteRowButton() {
+            let rowTarget = event.target.closest('tr');
+            rowTarget.remove();
         }
     </script>
     <script>

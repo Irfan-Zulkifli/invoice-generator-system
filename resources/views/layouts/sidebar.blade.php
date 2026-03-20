@@ -14,7 +14,7 @@
                     </a>
                 </li>
 
-                <li>
+                <li class="{{ request()->routeIs('sales.*') ? 'mm-active' : '' }}">
                     <a href="{{ route('sales.index') }}" class="waves-effect">
                         <i class="bx bxs-chart"></i>
                         <span key="t-chat">Sales</span>
