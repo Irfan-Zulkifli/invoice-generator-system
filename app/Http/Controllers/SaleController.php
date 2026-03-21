@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\CreateSaleAction;
+use App\Http\Requests\CreateSaleRequest;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Sale;
@@ -89,46 +91,11 @@ class SaleController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreateSaleRequest $saleRequest, Request $request, CreateSaleAction $action)
     {
         // dd($request->all());
-        if($request->formRadios == 'yes') {
-            $request->validate([
-                'customer_id' => 'required|exists:customers,id',
-                'product_id' => 'required|array',
-                'product_id.*' => 'exists:products,id',
-                'quantity' => 'required|array',
-                'quantity.*' => 'numeric|regex:/[0-9]/i'
-            ], [
-                'customer_id.required' => 'You are required to pick a customer.',
-                'customer_id.exists' => 'Customer does not exists.',
-                'product_id.required' => 'You are required to pick at least one product.',
-                'product_id.array' => 'Your product selection is invalid.',
-                'product_id.*.exists' => 'Your selected product already exists',
-                'quantity.required' => 'You must provide a quantity for the products.',
-                'quantity.array' => 'The quantity format is invalid.',
-                'quantity.*.numeric' => 'Every quantity provided must be a number.',
-                'quantity.*.regex' => 'The quantity must contain only valid digits.'
-            ]);
-        } else {
-            $request->validate([
-                'name' => 'required|string|max:255',
-                'email' => 'nullable|email',
-                'phone' => 'nullable|string|max:10',
-                'address' => 'nullable|string',
-                'product_id' => 'required|array',
-                'product_id.*' => 'exists:products,id',
-                'quantity' => 'required|array',
-                'quantity.*' => 'numeric|regex:/[0-9]/i'
-            ], [
-                'name.required' => 'Customer name is required',
-                'name.string' => 'Customer name must be a string',
-                'name.max' => 'Customer name cannot exceed 255 characters',
-                'email.email' => 'Email must follow the email format',
-                'phone.max' => 'Phone Number cannot exceed 9 number. Exclude the "-" sign',
-                'address.string' => 'String must be a string',
-            ]);
-        }
+        $action->execute($saleRequest->validated());
+        
     }
 
     /**
