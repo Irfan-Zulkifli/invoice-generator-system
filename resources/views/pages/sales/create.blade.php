@@ -115,7 +115,7 @@
                                             <div class="text-end mb-3">
                                                 <button type="button" class="btn btn-primary waves-effect btn-label waves-light" onclick="addRowButton()"><i class="bx bx-plus-medical label-icon"></i> Add Product</button>
                                             </div>
-                                            <div class="table-responsive table-bordered">
+                                            <div class="table-responsive table-bordered mb-3">
                                                 <table class="table mb-0">
                                                     <thead>
                                                         <tr>
@@ -191,6 +191,29 @@
                                                     </td>
                                                 </tr>
                                             </template>
+                                            {{-- <div class="mb-3">
+                                                <label>Due date for payment completion</label>
+                                                <div class="input-group" id="datepicker2">
+                                                    <input type="text" class="form-control" placeholder="dd M, yyyy"
+                                                        data-date-format="dd M, yyyy" data-date-container='#datepicker2' data-provide="datepicker"
+                                                        data-date-autoclose="true">
+
+                                                    <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
+                                                </div>
+                                            </div> --}}
+                                            <div class="mb-3">
+                                                <label>Due date for payment completion</label>
+                                                <div class="input-group" id="datepicker2">
+                                                    <input type="text" class="form-control" name="due_date" placeholder="yyyy-mm-dd"
+                                                        data-date-format="yyyy-mm-dd" data-date-container="body" data-provide="datepicker"
+                                                        data-date-autoclose="true" value="{{ old('due_date') }}">
+
+                                                    <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
+                                                </div>
+                                                @error('due_date')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                @enderror
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -221,6 +244,11 @@
     <script src="{{ asset('assets/libs/select2/js/select2.min.js') }}"></script>
     <script src="{{ asset('assets/libs/jquery.repeater/jquery.repeater.min.js') }}"></script>
     <script src="{{ asset('assets/js/pages/form-repeater.int.js') }}"></script>
+    <script src="{{ asset('assets/libs/bootstrap-datepicker/js/bootstrap-datepicker.min.js') }}"></script>
+    <script src="{{ asset('assets/libs/spectrum-colorpicker2/spectrum.min.js') }}"></script>
+    <script src="{{ asset('assets/libs/bootstrap-timepicker/js/bootstrap-timepicker.min.js') }}"></script>
+    <script src="{{ asset('assets/libs/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js') }}"></script>
+    <script src="{{ asset('assets/libs/tui-date-picker/tui-date-picker.min.js') }}"></script>
     <script>
 
         function getTemplate(value) {

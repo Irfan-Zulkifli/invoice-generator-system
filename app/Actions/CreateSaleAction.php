@@ -10,7 +10,8 @@ class CreateSaleAction {
 
     public function execute(Array $data)
     {
-        return DB::transaction(function() {
+        // dd($data['product_id']);
+        return DB::transaction(function () use ($data) {
 
             if ($data['formRadios'] == 'no') {
                 $customer = Customer::create([
@@ -25,9 +26,25 @@ class CreateSaleAction {
                 $customer = Customer::findOrFail($data['customer_id']);
             }
 
-            Sale::create();
+            $sale = Sale::create([
+                'customer_id' => $customer->id,
+                'user_id' => auth()->id(),
+                'status' => 'unpaid',
+                'due_date' => $data['due_date'],
+            ]);
 
+            $syncData = [];
 
+            foreach ($data['product_id'] as $index => $productId) {
+                $syncData[$productId] = [
+                    'quantity' => $data['quantity'][$index],
+                ];
+            }
+
+            $sale->products()->sync($syncData);
+
+            return $sale;
+            
         });
     }
 }

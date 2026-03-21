@@ -59,8 +59,7 @@ class SaleController extends Controller
 
         $dataTable = $builder->columns([
             ['data' => 'DT_RowIndex', 'name' => 'DT_RowIndex', 'title' => '#', 'orderable' => false, 'searchable' => false],
-            ['data' => 'buyer.name', 'name' => 'buyer.name', 'title' => 'Customer'],
-            ['data' => 'total_amount', 'name' => 'total_amount', 'title' => 'Amount'],
+            ['data' => 'buyer.name', 'name' => 'buyer.name', 'title' => 'Customer', 'orderable' => false, 'searchable' => false],
             ['data' => 'status', 'name' => 'status', 'title' => 'Status'],
             ['data' => 'actions', 'name' => 'actions', 'title' => 'Actions', 'orderable' => false, 'searchable' => false],
         ])
@@ -91,11 +90,12 @@ class SaleController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(CreateSaleRequest $saleRequest, Request $request, CreateSaleAction $action)
+    public function store(CreateSaleRequest $saleRequest, CreateSaleAction $action)
     {
-        // dd($request->all());
+        
         $action->execute($saleRequest->validated());
         
+        return redirect()->route('sales.index');
     }
 
     /**

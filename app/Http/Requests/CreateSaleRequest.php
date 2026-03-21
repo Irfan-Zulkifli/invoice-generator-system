@@ -26,7 +26,8 @@ class CreateSaleRequest extends FormRequest
             'product_id' => 'required|array',
             'product_id.*' => 'exists:products,id',
             'quantity' => 'required|array',
-            'quantity.*' => 'numeric|regex:/[0-9]/i'
+            'quantity.*' => 'numeric|regex:/[0-9]/i',
+            'due_date' => 'required|date|date_format:"Y-m-d"|after_or_equal:today',
         ];
 
         if ($this->input('formRadios') == 'yes') {
