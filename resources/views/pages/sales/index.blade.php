@@ -17,7 +17,7 @@
 @section('scripts')
     {!! $dataTable->scripts() !!}
     <script>
-        function deleteCustomer(id) {
+        function deleteSale(id) {
             Swal.fire({
                 title: "Are you sure to delete this?",
                 text: "You won't be able to revert this!",

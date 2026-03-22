@@ -105,7 +105,7 @@ class CustomerController extends Controller
 
         Customer::create($validate);
 
-        return redirect()->route('customers.index');
+        return redirect()->route('customers.index')->with('success', 'Customer created successfully!');
     }
 
     /**
@@ -152,7 +152,7 @@ class CustomerController extends Controller
 
         $customer->update($validate);
 
-        return redirect()->route('customers.index');
+        return redirect()->route('customers.index')->with('success', 'Customer updated successfully!');
     }
 
     /**

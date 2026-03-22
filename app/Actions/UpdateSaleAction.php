@@ -6,12 +6,12 @@ use App\Models\Customer;
 use App\Models\Sale;
 use Illuminate\Support\Facades\DB;
 
-class CreateSaleAction {
+class UpdateSaleAction {
 
-    public function execute(Array $data)
+    public function execute(Sale $sale, Array $data)
     {
         
-        return DB::transaction(function () use ($data) {
+        return DB::transaction(function () use ($sale, $data) {
 
             if ($data['formRadios'] == 'no') {
                 $customer = Customer::create([
@@ -26,10 +26,9 @@ class CreateSaleAction {
                 $customer = Customer::findOrFail($data['customer_id']);
             }
 
-            $sale = Sale::create([
+            $sale->update([
                 'customer_id' => $customer->id,
                 'user_id' => auth()->id(),
-                'status' => 'unpaid',
                 'due_date' => $data['due_date'],
             ]);
 

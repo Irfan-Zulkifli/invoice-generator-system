@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Actions\CreateSaleAction;
+use App\Actions\UpdateSaleAction;
+use App\Actions\UpdateSaleRequest;
 use App\Http\Requests\CreateSaleRequest;
 use App\Models\Customer;
 use App\Models\Product;
@@ -32,6 +34,11 @@ class SaleController extends Controller
                 ->addColumn('actions', function ($sale) {
                     $editUrl = route('sales.edit', $sale);
                     $deleteUrl = route('sales.destroy', $sale);
+                    $viewUrl = route('sales.show', $sale);
+
+                    $viewBtn = '<a href="'.$viewUrl.'" class="btn btn-sm btn-secondary waves-effect waves-light" title="Edit">
+                                    <i class="bx bx-show-alt"></i>
+                                </a>';
 
                     // Edit Button (Blue with icon)
                     $editBtn = '<a href="'.$editUrl.'" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
@@ -39,7 +46,7 @@ class SaleController extends Controller
                                 </a>';
                                 
                     // Delete Button (Red with icon, triggers JS)
-                    $deleteBtn = '<button type="button" onclick="deleteCustomer('.$sale->id.')" class="btn btn-sm btn-danger waves-effect waves-light" title="Delete">
+                    $deleteBtn = '<button type="button" onclick="deleteSale('.$sale->id.')" class="btn btn-sm btn-danger waves-effect waves-light" title="Delete">
                                     <i class="bx bx-trash"></i>
                                 </button>';
                                 
@@ -50,7 +57,7 @@ class SaleController extends Controller
                                 </form>';
 
                     // Wrap them in a d-flex container with a gap
-                    return '<div class="d-flex align-items-center gap-2">'.$editBtn.$deleteBtn.$deleteForm.'</div>';
+                    return '<div class="d-flex align-items-center gap-2">'.$viewBtn.($sale->status->label() == 'unpaid' ? $editBtn : '').$deleteBtn.$deleteForm.'</div>';
                 })
                 ->addIndexColumn()
                 ->rawColumns(['actions'])
@@ -73,7 +80,7 @@ class SaleController extends Controller
      */
     public function create()
     {
-        $title = 'Create Customer';
+        $title = 'Create Sale';
         $breadcrumbs = [
             'Home' => route('template'),
             'Sales' => route('sales.index'),
@@ -92,10 +99,10 @@ class SaleController extends Controller
      */
     public function store(CreateSaleRequest $saleRequest, CreateSaleAction $action)
     {
-        
+
         $action->execute($saleRequest->validated());
         
-        return redirect()->route('sales.index');
+        return redirect()->route('sales.index')->with('success', 'Sale created successfully!');
     }
 
     /**
@@ -103,7 +110,16 @@ class SaleController extends Controller
      */
     public function show(Sale $sale)
     {
-        //
+        $sale->load(['buyer', 'products']);
+    
+        $title = 'View Sale #' . $sale->id;
+        $breadcrumbs = [
+            'Home' => route('template'),
+            'Sales' => route('sales.index'),
+            'View' => route('sales.show', $sale),
+        ];
+
+        return view('pages.sales.show', compact('title', 'breadcrumbs', 'sale'));
     }
 
     /**
@@ -111,15 +127,36 @@ class SaleController extends Controller
      */
     public function edit(Sale $sale)
     {
-        //
+        $title = 'Edit Sale';
+        $breadcrumbs = [
+            'Home' => route('template'),
+            'Sales' => route('sales.index'),
+            'Edit' => route('sales.edit', $sale),
+        ];
+
+        $existingCustomers = Customer::with('seller')->where('seller_id', auth()->id())->get();
+        $products = Product::where('creator_id', auth()->id())->get();
+
+        return view('pages.sales.create', compact('title', 'breadcrumbs', 'sale', 'existingCustomers', 'products'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Sale $sale)
+    public function update(UpdateSaleAction $action, Sale $sale, CreateSaleRequest $saleRequest)
     {
-        //
+        if (!$sale->exists) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An error occurred during processing.'
+            ]);
+        }
+
+        $action->execute($sale, $saleRequest->validated());
+
+        return redirect()->route('sales.index')->with('success', 'Sale updated successfully!');
+
+
     }
 
     /**
@@ -127,6 +164,12 @@ class SaleController extends Controller
      */
     public function destroy(Sale $sale)
     {
-        //
+        $sale->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Customer Deleted Successfully.',
+            'redirect' => route('customers.index'),
+        ]);
     }
 }

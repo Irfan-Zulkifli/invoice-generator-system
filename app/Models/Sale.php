@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\SaleItem;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Sale extends Model
 {
@@ -37,5 +38,10 @@ class Sale extends Model
                     ->using(SaleItem::class)
                     ->withPivot(['quantity'])
                     ->withTimeStamps();
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
     }
 }

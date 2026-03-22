@@ -110,7 +110,7 @@ class ProductController extends Controller
             'creator_id' => auth()->id(),
         ]);
 
-        return redirect()->route('products.index');
+        return redirect()->route('products.index')->with('success', 'Product created successfully!');
     }
 
     /**
@@ -160,7 +160,7 @@ class ProductController extends Controller
             'price' => $request->price,
         ]);
 
-        return redirect()->route('products.index');
+        return redirect()->route('products.index')->with('success', 'Product updated successfully');
     }
 
     /**
