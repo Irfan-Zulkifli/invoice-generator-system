@@ -35,6 +35,7 @@ class SaleController extends Controller
                     $editUrl = route('sales.edit', $sale);
                     $deleteUrl = route('sales.destroy', $sale);
                     $viewUrl = route('sales.show', $sale);
+                    $paymentUrl = route('sales.payments', $sale);
 
                     $viewBtn = '<a href="'.$viewUrl.'" class="btn btn-sm btn-secondary waves-effect waves-light" title="Edit">
                                     <i class="bx bx-show-alt"></i>
@@ -43,6 +44,10 @@ class SaleController extends Controller
                     // Edit Button (Blue with icon)
                     $editBtn = '<a href="'.$editUrl.'" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
                                     <i class="bx bx-edit-alt"></i>
+                                </a>';
+
+                    $updatePaymentBtn = '<a href="'.$paymentUrl.'" class="btn btn-sm btn-info waves-effect waves-light" title="Update Payment">
+                                    <i class="bx bx-money"></i>
                                 </a>';
                                 
                     // Delete Button (Red with icon, triggers JS)
@@ -57,7 +62,7 @@ class SaleController extends Controller
                                 </form>';
 
                     // Wrap them in a d-flex container with a gap
-                    return '<div class="d-flex align-items-center gap-2">'.$viewBtn.($sale->status->label() == 'unpaid' ? $editBtn : '').$deleteBtn.$deleteForm.'</div>';
+                    return '<div class="d-flex align-items-center gap-2">'.$viewBtn.($sale->status->label() == 'unpaid' ? $editBtn : '').$updatePaymentBtn.$deleteBtn.$deleteForm.'</div>';
                 })
                 ->addIndexColumn()
                 ->rawColumns(['actions'])
