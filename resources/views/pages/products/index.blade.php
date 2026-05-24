@@ -2,6 +2,7 @@
 @section('content')
     <div class="row">
         <div class="col-12">
+            @include('components.date-filter')
             <div class="card">
                 <div class="card-body">
                     <h4 class="card-title">Products List</h4>
@@ -17,6 +18,19 @@
 @section('scripts')
     {!! $dataTable->scripts() !!}
     <script>
+        $(document).ready(function() {
+            $('#btn-filter').on('click', function() {
+                let tableId = Object.keys(window.LaravelDataTables)[0];
+                window.LaravelDataTables[tableId].draw();
+            });
+            $('#btn-reset').on('click', function() {
+                $('#start_date').val('');
+                $('#end_date').val('');
+                let tableId = Object.keys(window.LaravelDataTables)[0];
+                window.LaravelDataTables[tableId].draw();
+            });
+        });
+
         function deleteProduct(id) {
             Swal.fire({
                 title: "Are you sure want to delete this?",

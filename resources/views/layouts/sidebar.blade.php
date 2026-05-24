@@ -7,14 +7,14 @@
         <div id="sidebar-menu">
             <!-- Left Menu Start -->
             <ul class="metismenu list-unstyled" id="side-menu">
-                <li>
-                    <a href="#" class="waves-effect">
+                <li class="{{ request()->routeIs('dashboard') ? 'mm-active' : '' }}">
+                    <a href="{{ route('dashboard') }}" class="waves-effect">
                         <i class="bx bx-home-circle"></i>
                         <span key="t-chat">Dashboard</span>
                     </a>
                 </li>
 
-                <li class="{{ request()->routeIs('sales.*') ? 'mm-active' : '' }}">
+                <li class="{{ request()->routeIs('sales.*') || request()->routeIs('payments.*') ? 'mm-active' : '' }}">
                     <a href="{{ route('sales.index') }}" class="waves-effect">
                         <i class="bx bxs-chart"></i>
                         <span key="t-chat">Sales</span>

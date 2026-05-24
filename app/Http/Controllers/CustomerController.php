@@ -16,13 +16,20 @@ class CustomerController extends Controller
     {
         $title = 'Customers';
         $breadcrumbs = [
-            'Home' => route('template'),
+            'Home' => route('dashboard'),
             'Customers' => route('customers.index'),
         ];
         $button_create = '<a href="'.route('customers.create').'" class="btn btn-primary"><i class="fas fa-plus"></i> Add Customer</a>';
 
         if (request()->ajax()) {
             $customers = Customer::with('seller')->where('seller_id', auth()->id());
+
+            if (request()->filled('start_date')) {
+                $customers->whereDate('created_at', '>=', request('start_date'));
+            }
+            if (request()->filled('end_date')) {
+                $customers->whereDate('created_at', '<=', request('end_date'));
+            }
 
             return DataTables::of($customers)
                 ->addColumn('actions', function ($customer) {
@@ -60,7 +67,12 @@ class CustomerController extends Controller
             ['data' => 'phone', 'name' => 'phone', 'title' => 'Phone'],
             ['data' => 'actions', 'name' => 'actions', 'title' => 'Actions', 'orderable' => false, 'searchable' => false],
         ])
-            ->minifiedAjax();
+            ->ajax([
+                'data' => 'function(d) {
+                    d.start_date = $("#start_date").val();
+                    d.end_date = $("#end_date").val();
+                }'
+            ]);
 
         return view('pages.customers.index', compact('title', 'breadcrumbs', 'dataTable', 'button_create'));
     }
@@ -72,7 +84,7 @@ class CustomerController extends Controller
     {
         $title = 'Create Customer';
         $breadcrumbs = [
-            'Home' => route('template'),
+            'Home' => route('dashboard'),
             'Customers' => route('customers.index'),
             'Create' => route('customers.create'),
         ];
@@ -123,7 +135,7 @@ class CustomerController extends Controller
     {
         $title = 'Edit Customer';
         $breadcrumbs = [
-            'Home' => route('template'),
+            'Home' => route('dashboard'),
             'Customers' => route('customers.index'),
             'Edit' => route('customers.edit', $customer),
         ];

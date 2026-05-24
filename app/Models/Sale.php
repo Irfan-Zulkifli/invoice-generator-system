@@ -44,4 +44,26 @@ class Sale extends Model
     {
         return $this->hasMany(Payment::class);
     }
+
+    public function getTotalPriceAttribute()
+    {
+        $totalPrice = 0;
+        foreach($this->products as $product) {
+            $totalPrice += $product->price * $product->pivot->quantity;
+        }
+        return $totalPrice;
+    }
+
+    public function getStatusAfterPaymentAttribute()
+    {
+        $totalPayments = $this->payments()->sum('amount');
+        if ($totalPayments == 0) {
+            return 'unpaid';
+        } elseif ($totalPayments > 0) {
+            return 'partially_paid';
+        } else {
+            return 'paid';
+        }
+
+    }
 }

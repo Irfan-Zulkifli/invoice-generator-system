@@ -67,14 +67,14 @@
                         <div class="dropdown d-inline-block">
                             <button type="button" class="btn header-item waves-effect" id="page-header-user-dropdown"
                                 data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <img class="rounded-circle header-profile-user"
-                                    src="{{ asset('assets/images/users/avatar-1.jpg') }}" alt="Header Avatar">
-                                <span class="d-none d-xl-inline-block ms-1" key="t-henry">Henry</span>
+                                {{-- <img class="rounded-circle header-profile-user"
+                                    src="{{ asset('assets/images/users/avatar-1.jpg') }}" alt="Header Avatar"> --}}
+                                <span class="d-none d-xl-inline-block ms-1" key="t-henry">{{ auth()->user()->name ?? 'User' }}</span>
                                 <i class="mdi mdi-chevron-down d-none d-xl-inline-block"></i>
                             </button>
                             <div class="dropdown-menu dropdown-menu-end">
                                 <!-- item-->
-                                <a class="dropdown-item" href="#"><i
+                                <a class="dropdown-item" href="{{ route('profile.edit') }}"><i
                                         class="bx bx-user font-size-16 align-middle me-1"></i> <span
                                         key="t-profile">Profile</span></a>
                                 <div class="dropdown-divider"></div>

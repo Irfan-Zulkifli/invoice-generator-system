@@ -32,7 +32,7 @@ class AuthController extends Controller
             return back()->withErrors(['status' => 'Invalid credentials']);
         }
 
-        return redirect()->route('template');
+        return redirect()->route('dashboard');
 
     }
 

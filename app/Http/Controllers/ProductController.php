@@ -17,7 +17,7 @@ class ProductController extends Controller
     {
         $title = 'Products';
         $breadcrumbs = [
-            'Home' => route('template'),
+            'Home' => route('dashboard'),
             'Products' => route('products.index'),
         ];
         $button_create = '<a href="'.route('products.create').'" class="btn btn-primary"><i class="fas fa-plus"></i> Create Product</a>';
@@ -26,6 +26,13 @@ class ProductController extends Controller
 
         if (request()->ajax()) {
             $products = Product::with('creator')->where('creator_id', auth()->id());
+
+            if (request()->filled('start_date')) {
+                $products->whereDate('created_at', '>=', request('start_date'));
+            }
+            if (request()->filled('end_date')) {
+                $products->whereDate('created_at', '<=', request('end_date'));
+            }
 
             return DataTables::of($products)
                 ->addColumn('actions', function ($product) {
@@ -63,7 +70,12 @@ class ProductController extends Controller
             ['data' => 'price', 'name' => 'price', 'title' => 'Price'],
             ['data' => 'actions', 'name' => 'actions', 'title' => 'Actions', 'orderable' => false, 'searchable' => false],
         ])
-            ->minifiedAjax();
+            ->ajax([
+                'data' => 'function(d) {
+                    d.start_date = $("#start_date").val();
+                    d.end_date = $("#end_date").val();
+                }'
+            ]);
 
         return view('pages.products.index', compact('title', 'breadcrumbs', 'dataTable', 'button_create'));
     }
@@ -75,7 +87,7 @@ class ProductController extends Controller
     {
         $title = 'Create Product';
         $breadcrumbs = [
-            'Home' => route('template'),
+            'Home' => route('dashboard'),
             'Products' => route('products.index'),
             'Create' => route('products.create'),
         ];
@@ -128,7 +140,7 @@ class ProductController extends Controller
     {
         $title = 'Edit Product';
         $breadcrumbs = [
-            'Home' => route('template'),
+            'Home' => route('dashboard'),
             'Products' => route('products.index'),
             'Edit' => route('products.edit', $product),
         ];

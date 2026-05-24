@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Payment;
 use App\Models\Sale;
+use App\Rules\PaymentCheck;
+use Carbon\Carbon;
+use DateTime;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 use Yajra\DataTables\Html\Builder;
@@ -12,20 +15,30 @@ class PaymentController extends Controller
 {
     public function getPaymentsBySale(Sale $sale, Builder $builder) 
     {
-        $title = 'Payments';
+        $title = 'Payments: Sale #' . $sale->id;
         $breadcrumbs = [
-            'Home' => route('template'),
+            'Home' => route('dashboard'),
             'Sales' => route('sales.index'),
-            'Payments' => route('payments.index'),
+            'Payments: Sale #' . $sale->id => route('sales.payments', $sale),
         ];
 
-        $button_create = '<a href="'.route('payments.create').'" class="btn btn-primary"><i class="fas fa-plus"></i> Add Payment Record</a>';
+        $button_create = '<a href="'.route('sales.payments.create', $sale).'" class="btn btn-primary"><i class="fas fa-plus"></i> Add Payment Record</a>';
 
         if (request()->ajax()) {
-            $payments = Payment::where('sale_id' ,$sale->id)->get();
+            $payments = Payment::where('sale_id' ,$sale->id);
 
-            return Datatables::of($payments)
-                ->addColumn('actions', function ($payment) {
+            if (request()->filled('start_date')) {
+                $payments->whereDate('payment_date', '>=', request('start_date'));
+            }
+            if (request()->filled('end_date')) {
+                $payments->whereDate('payment_date', '<=', request('end_date'));
+            }
+
+            return DataTables::of($payments)
+                ->editColumn('payment_method', function ($payment) {
+                    return str_replace('_', ' ', $payment->payment_method);
+                })
+                ->addColumn('actions', function ($payment) use ($sale) {
                     $editUrl = route('payments.edit', $payment);
                     $deleteUrl = route('payments.destroy', $payment);
                     $viewUrl = route('payments.show', $payment);
@@ -63,14 +76,59 @@ class PaymentController extends Controller
             ['data' => 'amount', 'name' => 'amount', 'title' => 'Amount'],
             ['data' => 'payment_date', 'name' => 'payment_date', 'title' => 'Payment Date'],
             ['data' => 'payment_method', 'name' => 'payment_method', 'title' => 'Payment Method'],
+            ['data' => 'actions', 'name' => 'actions', 'title' => 'Action']
         ])
         ->parameters([
             'dom' => 'Bfrtip',
             'buttons' => ['copy', 'csv', 'excel', 'pdf', 'print']
         ])
-        ->minifiedAjax();
+        ->ajax([
+            'data' => 'function(d) {
+                d.start_date = $("#start_date").val();
+                d.end_date = $("#end_date").val();
+            }'
+        ]);
 
         return view('pages.payments.index', compact('title', 'breadcrumbs', 'dataTable', 'button_create'));
+    }
+
+    public function createPaymentRecord(Sale $sale)
+    {
+        $title = 'Create Payment Record: Sale #' . $sale->id;
+        $breadcrumbs = [
+            'Home' => route('dashboard'),
+            'Sales' => route('sales.index'),
+            'Payments: Sale #' . $sale->id => route('sales.payments', $sale),
+            'Create Payment: Sale #' . $sale->id => route('sales.payments.create', $sale)
+        ];
+
+        $payment = new Payment();
+
+        return view('pages.payments.create', compact('payment', 'title', 'breadcrumbs', 'sale'));
+    }
+
+    public function addPaymentRecord(Sale $sale, Request $request)
+    {
+        // $sale = Sale::findOrFail($request->sale_id);
+        $validated = $request->validate([
+            'sale_id' => 'required|exists:sales,id',
+            'payment_date' => 'required|date_format:d/m/Y',
+            'amount' => ['required', 'numeric', 'min:0', new PaymentCheck($sale)],
+            'payment_method' => 'required|in:tunai,pindahan_bank,kad_kredit,cek',
+            'reference_number' => 'nullable|string',
+            'notes' => 'nullable|string',
+        ]);
+
+        $validated['payment_date'] = Carbon::createFromFormat('d/m/Y', $validated['payment_date'])->format('Y-m-d');
+
+        $validated['recorded_by'] = auth()->user()->id;
+
+        Payment::create($validated);
+
+        $sale->status = $sale->status_after_payment;
+        $sale->save();
+
+        return redirect()->route('sales.payments', $sale)->with('success', 'Payments created successfully.');
     }
 
     /**
@@ -79,7 +137,6 @@ class PaymentController extends Controller
     public function index()
     {
         
-
     }
 
     /**
@@ -103,7 +160,18 @@ class PaymentController extends Controller
      */
     public function show(Payment $payment)
     {
-        //
+        $isView = true;
+        $sale = $payment->sale;
+
+        $title = 'View Payment Record: Sale #' . $sale->id;
+        $breadcrumbs = [
+            'Home' => route('dashboard'),
+            'Sales' => route('sales.index'),
+            'Payments: Sale #' . $sale->id => route('sales.payments', $sale),
+            'View Payment: Sale #' . $sale->id => route('payments.show', $sale)
+        ];
+
+        return view('pages.payments.create', compact('isView', 'payment', 'sale', 'title', 'breadcrumbs'));
     }
 
     /**
@@ -111,7 +179,18 @@ class PaymentController extends Controller
      */
     public function edit(Payment $payment)
     {
-        //
+        $isEdit = true;
+        $sale = $payment->sale;
+
+        $title = 'Edit Payment Record: Sale #' . $sale->id;
+        $breadcrumbs = [
+            'Home' => route('dashboard'),
+            'Sales' => route('sales.index'),
+            'Payments: Sale #' . $sale->id => route('sales.payments', $sale),
+            'Edit Payment: Sale #' . $sale->id => route('payments.edit', $sale)
+        ];
+
+        return view('pages.payments.create', compact('isEdit', 'payment', 'sale', 'title', 'breadcrumbs'));
     }
 
     /**
@@ -119,7 +198,22 @@ class PaymentController extends Controller
      */
     public function update(Request $request, Payment $payment)
     {
-        //
+        $validated = $request->validate([
+            'sale_id' => 'required|exists:sales,id',
+            'payment_date' => 'required|date_format:d/m/Y',
+            'amount' => 'required|numeric|min:0',
+            'payment_method' => 'required|in:tunai,pindahan_bank,kad_kredit,cek',
+            'reference_number' => 'nullable|string',
+            'notes' => 'nullable|string',
+        ]);
+
+        $sale = $payment->sale;
+
+        $validated['payment_date'] = Carbon::createFromFormat('d/m/Y', $validated['payment_date'])->format('Y-m-d');
+
+        $payment->update($validated);
+
+        return redirect()->route('sales.payments', $sale)->with('success', 'Payments created successfully.');
     }
 
     /**
@@ -127,6 +221,13 @@ class PaymentController extends Controller
      */
     public function destroy(Payment $payment)
     {
-        //
+        $sale = $payment->sale;
+        $payment->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Payment Deleted Successfully',
+            'redirect' => route('sales.payments', $sale),
+        ]);
     }
 }

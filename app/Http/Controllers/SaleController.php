@@ -22,7 +22,7 @@ class SaleController extends Controller
     {
         $title = 'Sales';
         $breadcrumbs = [
-            'Home' => route('template'),
+            'Home' => route('dashboard'),
             'Sales' => route('sales.index'),
         ];
         $button_create = '<a href="'.route('sales.create').'" class="btn btn-primary"><i class="fas fa-plus"></i> Add Sale</a>';
@@ -30,7 +30,17 @@ class SaleController extends Controller
         if (request()->ajax()) {
             $sales = Sale::with(['buyer', 'seller'])->where('user_id', auth()->id());
 
+            if (request()->filled('start_date')) {
+                $sales->whereDate('created_at', '>=', request('start_date'));
+            }
+            if (request()->filled('end_date')) {
+                $sales->whereDate('created_at', '<=', request('end_date'));
+            }
+
             return DataTables::of($sales)
+                ->editColumn('status', function ($sale) {
+                    return $sale->status->label();
+                })
                 ->addColumn('actions', function ($sale) {
                     $editUrl = route('sales.edit', $sale);
                     $deleteUrl = route('sales.destroy', $sale);
@@ -65,7 +75,7 @@ class SaleController extends Controller
                     return '<div class="d-flex align-items-center gap-2">'.$viewBtn.($sale->status->label() == 'unpaid' ? $editBtn : '').$updatePaymentBtn.$deleteBtn.$deleteForm.'</div>';
                 })
                 ->addIndexColumn()
-                ->rawColumns(['actions'])
+                ->rawColumns(['actions', 'status'])
                 ->make(true);
         }
 
@@ -75,7 +85,12 @@ class SaleController extends Controller
             ['data' => 'status', 'name' => 'status', 'title' => 'Status'],
             ['data' => 'actions', 'name' => 'actions', 'title' => 'Actions', 'orderable' => false, 'searchable' => false],
         ])
-            ->minifiedAjax();
+            ->ajax([
+                'data' => 'function(d) {
+                    d.start_date = $("#start_date").val();
+                    d.end_date = $("#end_date").val();
+                }'
+            ]);
 
         return view('pages.sales.index', compact('title', 'breadcrumbs', 'dataTable', 'button_create'));
     }
@@ -87,7 +102,7 @@ class SaleController extends Controller
     {
         $title = 'Create Sale';
         $breadcrumbs = [
-            'Home' => route('template'),
+            'Home' => route('dashboard'),
             'Sales' => route('sales.index'),
             'Create' => route('sales.create'),
         ];
@@ -119,7 +134,7 @@ class SaleController extends Controller
     
         $title = 'View Sale #' . $sale->id;
         $breadcrumbs = [
-            'Home' => route('template'),
+            'Home' => route('dashboard'),
             'Sales' => route('sales.index'),
             'View' => route('sales.show', $sale),
         ];
@@ -134,7 +149,7 @@ class SaleController extends Controller
     {
         $title = 'Edit Sale';
         $breadcrumbs = [
-            'Home' => route('template'),
+            'Home' => route('dashboard'),
             'Sales' => route('sales.index'),
             'Edit' => route('sales.edit', $sale),
         ];
