@@ -36,6 +36,11 @@
                         </a>
                     </div>
                     <div class="p-2">
+                        @if (session('success'))
+                            <div class="alert alert-success text-center mb-4">
+                                {{ session('success') }}
+                            </div>
+                        @endif
                         @error('status')
                             <div class="alert alert-danger">{{ $message }}</div>
                         @enderror
@@ -75,7 +80,7 @@
                             </div>
 
                             <div class="mt-4 text-center">
-                                <a href="auth-recoverpw.html" class="text-muted"><i class="mdi mdi-lock me-1"></i> Forgot
+                                <a href="{{ route('password-reset-page') }}" class="text-muted"><i class="mdi mdi-lock me-1"></i> Forgot
                                     your password?</a>
                             </div>
                         </form>

@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
@@ -27,5 +28,11 @@ Route::middleware('auth')->group(function () {
     Route::post('sales/{sale}/payments', [PaymentController::class, 'addPaymentRecord'])->name('sales.payments.add');
 });
 
-Route::post('/login-attempt', [AuthController::class, 'login'])->middleware('guest')->name('login.submit');
-Route::get('/', [AuthController::class, 'loginForm'])->middleware('guest')->name('login');
+Route::middleware('guest')->group(function () {
+    Route::post('/login-attempt', [AuthController::class, 'login'])->name('login.submit');
+    Route::get('/', [AuthController::class, 'loginForm'])->name('login');
+    Route::get('/password-reset', [PasswordResetController::class, 'passwordResetPage'])->name('password-reset-page');
+    Route::post('/reset-link', [PasswordResetController::class, 'sendResetLink'])->name('send-reset-link');
+    Route::get('/reset-password-page/{token}', [PasswordResetController::class, 'resetForm'])->name('password.reset');
+    Route::post('/password-reset-sent', [PasswordResetController::class, 'updatePassword'])->name('password.update');
+});

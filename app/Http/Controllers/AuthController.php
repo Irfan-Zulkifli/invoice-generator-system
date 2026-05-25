@@ -15,7 +15,7 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $request->validate([
+        $credentials = $request->validate([
             'email' => 'required|email',
             'password' => 'required',
         ], [
@@ -24,16 +24,26 @@ class AuthController extends Controller
             'password.required' => 'Password is required',
         ]);
 
-        if (! User::where('email', $request->email)->exists()) {
-            return back()->withErrors(['status' => 'Account not found']);
+        $remember = $request->boolean('remember');
+
+        if (Auth::attempt($credentials, $remember)) {
+
+            $request->session()->regenerate();
+            return redirect()->intended(route('dashboard'));
+
         }
 
-        if (! auth()->attempt($request->only('email', 'password'))) {
-            return back()->withErrors(['status' => 'Invalid credentials']);
-        }
+        return back()->withErrors([
+            'email' => 'The provided credentials do not match our records.',
+        ])->onlyInput('email');
 
-        return redirect()->route('dashboard');
+        // if (! User::where('email', $request->email)->exists()) {
+        //     return back()->withErrors(['status' => 'Account not found']);
+        // }
 
+        // if (! auth()->attempt($request->only('email', 'password'))) {
+        //     return back()->withErrors(['status' => 'Invalid credentials']);
+        // }
     }
 
     public function logout(Request $request)
