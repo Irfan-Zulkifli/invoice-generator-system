@@ -4,7 +4,7 @@
 <head>
 
     <meta charset="utf-8" />
-    <title>Dashboard | Skote - Admin & Dashboard Template</title>
+    <title>{{ $title }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
     <meta content="Themesbrand" name="author" />
@@ -103,6 +103,10 @@
     <script src="{{ asset('assets/libs/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js') }}"></script>
 
     <script src="{{ asset('assets/libs/sweetalert2/sweetalert2.all.min.js') }}"></script>
+
+    <script src="{{ asset('assets/libs/apexcharts/apexcharts.min.js') }}"></script>
+
+    {{-- <script src="{{ asset('assets/js/pages/apexcharts.init.js') }}"></script> --}}
 
     @yield('scripts')
 

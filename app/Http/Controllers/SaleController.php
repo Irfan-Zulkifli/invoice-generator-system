@@ -144,7 +144,9 @@ class SaleController extends Controller
             'View' => route('sales.show', $sale),
         ];
 
-        return view('pages.sales.show', compact('title', 'breadcrumbs', 'sale'));
+        $paymentsTable = $sale->payments()->paginate(5);
+
+        return view('pages.sales.show', compact('title', 'breadcrumbs', 'sale', 'paymentsTable'));
     }
 
     /**
@@ -200,6 +202,12 @@ class SaleController extends Controller
 
     public function receipt(Sale $sale)
     {
-        return view('pages.sales.receipt', compact('sale'));
+        $title = 'Offical Receipt: Sale #' . $sale->id;
+        $breadcrumbs = [
+            'Home' => route('dashboard'),
+            'Sales' => route('sales.index'),
+            'Receipt' => false,
+        ];
+        return view('pages.sales.receipt', compact('sale', 'title', 'breadcrumbs'));
     }
 }

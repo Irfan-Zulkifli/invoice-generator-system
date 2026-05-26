@@ -21,6 +21,7 @@ class Sale extends Model
     protected $casts = [
         'total_amount' => 'decimal:2',
         'due_date' => 'date',
+        'created_at' => 'date',
         'status' => \App\Enums\SaleStatus::class
     ];
 

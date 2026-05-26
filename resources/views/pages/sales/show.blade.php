@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('content')
     <div class="row">
-        <div class="col-lg-12">
+        <div class="col-lg-8">
             <div class="card">
                 <div class="card-body">
                     <div class="invoice-title">
@@ -117,5 +117,58 @@
                 </div>
             </div>
         </div>
+        <div class="col-lg-4 d-print-none">
+            <div class="card">
+                <div class="card-header bg-transparent border-bottom py-3">
+                    <h4 class="card-title mb-0">Payment History</h4>
+                </div>
+                
+                <div class="card-body">
+                    <div class="table-responsive">
+                        {{-- Removed table-light header, made table borderless --}}
+                        <table class="table table-borderless table-centered align-middle table-nowrap mb-0">
+                            <tbody>
+                                {{-- Changed to forelse to handle empty states gracefully --}}
+                                @forelse ($paymentsTable as $pay)
+                                    <tr class="border-bottom">
+                                        <td>
+                                            <h5 class="font-size-14 mb-1 fw-bold text-dark">
+                                                RM {{ number_format($pay->amount, 2) }}
+                                            </h5>
+                                            <span class="text-muted font-size-13">
+                                                <i class="bx bx-calendar me-1"></i> 
+                                                {{ \Carbon\Carbon::parse($pay->payment_date)->format('d M Y') }}
+                                            </span>
+                                        </td>
+                                        <td class="text-end">
+                                            <span class="badge bg-success-subtle text-success font-size-12 text-capitalize px-2 py-1">
+                                                {{ str_replace('_', ' ', $pay->payment_method) }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td class="text-center text-muted py-4">
+                                            <i class="bx bx-info-circle mb-2 font-size-20"></i><br>
+                                            No payments recorded.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {{-- Only show the pagination container if there are enough pages --}}
+                    @if($paymentsTable->hasPages())
+                        <div class="mt-4 pt-3 d-flex justify-content-center">
+                            {{ $paymentsTable->links() }}
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
     </div>
+@endsection
+@section('scripts')
+
 @endsection

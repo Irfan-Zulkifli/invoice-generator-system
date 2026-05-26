@@ -113,9 +113,9 @@
                                             RM {{ number_format($sale->total_price, 2) }}
                                         </td>
                                         <td>
-                                            @if ($sale->status->value == 'completed')
+                                            @if ($sale->status->label() == 'paid')
                                                 <span class="badge badge-pill badge-soft-success font-size-11">{{ ucfirst($sale->status->label()) }}</span>
-                                            @elseif ($sale->status->value == 'pending')
+                                            @elseif ($sale->status->label() == 'partially_paid')
                                                 <span class="badge badge-pill badge-soft-warning font-size-11">{{ ucfirst($sale->status->label()) }}</span>
                                             @else
                                                 <span class="badge badge-pill badge-soft-danger font-size-11">{{ ucfirst($sale->status->label()) }}</span>
@@ -134,12 +134,32 @@
             </div>
         </div>
     </div>
+
+    <div class="row">
+        <div class="col-xl-6">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title mb-4">Sales by month</h4>
+                    
+                    <div id="column_chart" data-colors='["--bs-success","--bs-primary", "--bs-danger"]' class="apex-charts" dir="ltr"></div>                                      
+                </div>
+            </div><!--end card-->
+        </div>
+        <div class="col-xl-6">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title mb-4">Product sold by month</h4>
+                    
+                    <div id="product_chart" data-colors='["--bs-success","--bs-primary", "--bs-danger"]' class="apex-charts" dir="ltr"></div>                                      
+                </div>
+            </div><!--end card-->
+        </div>
+    </div>
 @endsection
 
 @section('scripts')
 <script>
     $(document).ready(function() {
-        // Set date filter values from query parameters if they exist
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('start_date')) {
             $('#start_date').val(urlParams.get('start_date'));
@@ -166,6 +186,132 @@
         $('#btn-reset').on('click', function() {
             window.location.href = "{{ route('dashboard') }}";
         });
+
+        var options = {
+            series: [
+                {
+                    name: 'Sales',
+                    data: @json($monthCount)
+                }
+            ],
+            chart: {
+                type: 'bar',
+                height: 350,
+                toolbar: { 
+                    show: false // Hides the hamburger menu for a cleaner dashboard look
+                }
+            },
+            // NEW: Specifically shapes the columns!
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '45%', // Makes the bars slightly slimmer and more elegant
+                    borderRadius: 4     // Gives the bars modern, slightly rounded tops
+                },
+            },
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                show: true,
+                width: 2,
+                colors: ['transparent']
+            },
+            xaxis: {
+                categories: @json($monthName),
+                axisBorder: { show: false }, // Removes the heavy black line at the bottom
+                axisTicks: { show: false }   // Removes the tiny notches on the x-axis
+            },
+            yaxis: {
+                title: {
+                    text: 'Sales Count',
+                    style: {
+                        fontWeight: '500'
+                    }
+                },
+            },
+            fill: {
+                opacity: 1
+            },
+            colors: ['#556ee6'],
+            
+            // NEW: Styles the background grid lines to match Bootstrap's light borders
+            grid: {
+                borderColor: '#f1f1f1', 
+                strokeDashArray: 3 // Makes the grid lines slightly dotted/dashed
+            },
+            // NEW: Customizes the hover box
+            tooltip: {
+                y: {
+                    formatter: function (val) {
+                        return val + " Total Sales"; // Adds nice text when they hover over a bar
+                    }
+                }
+            }
+        };
+
+        var chart = new ApexCharts(document.querySelector('#column_chart'), options)
+        chart.render();
+
+        var optionProduct = {
+            series: @json($productSeries),
+            chart: {
+                type: 'bar',
+                height: 350,
+                toolbar: { 
+                    show: false // Hides the hamburger menu for a cleaner dashboard look
+                }
+            },
+            // NEW: Specifically shapes the columns!
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '45%', // Makes the bars slightly slimmer and more elegant
+                    borderRadius: 4     // Gives the bars modern, slightly rounded tops
+                },
+            },
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                show: true,
+                width: 2,
+                colors: ['transparent']
+            },
+            xaxis: {
+                categories: @json($monthName),
+                axisBorder: { show: false }, // Removes the heavy black line at the bottom
+                axisTicks: { show: false }   // Removes the tiny notches on the x-axis
+            },
+            yaxis: {
+                title: {
+                    text: 'Product Count',
+                    style: {
+                        fontWeight: '500'
+                    }
+                },
+            },
+            fill: {
+                opacity: 1
+            },
+            colors: ['#556ee6', '#34c38f', '#f1b44c', '#f46a6a', '#50a5f1'],            
+            // NEW: Styles the background grid lines to match Bootstrap's light borders
+            grid: {
+                borderColor: '#f1f1f1', 
+                strokeDashArray: 3 // Makes the grid lines slightly dotted/dashed
+            },
+            // NEW: Customizes the hover box
+            tooltip: {
+                y: {
+                    formatter: function (val) {
+                        return val + " Total Sales"; // Adds nice text when they hover over a bar
+                    }
+                }
+            }  
+        }
+
+        var productChart = new ApexCharts(document.querySelector('#product_chart'), optionProduct);
+        productChart.render();
     });
 </script>
 @endsection

@@ -9,10 +9,12 @@ use Illuminate\Contracts\Validation\ValidationRule;
 class PaymentCheck implements ValidationRule
 {
     protected $sale;
+    protected $action;
 
-    public function __construct(Sale $sale)
+    public function __construct(Sale $sale, $action)
     {
         $this->sale = $sale;
+        $this->action = $action;
     }
 
     /**
@@ -22,7 +24,14 @@ class PaymentCheck implements ValidationRule
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $totalPayments = $this->sale->payments()->sum('amount');
+        if ($this->action == 'update') {
+            $totalPayments = $this->sale->payments()
+                                ->where('id', )
+                                ->sum('amount');
+        } else {
+            $totalPayments = $this->sale->payments()->sum('amount');
+        }
+        
 
         $totalAfterAdd = $totalPayments + $value;
 

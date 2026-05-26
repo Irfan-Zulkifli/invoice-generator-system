@@ -113,7 +113,7 @@ class PaymentController extends Controller
         $validated = $request->validate([
             'sale_id' => 'required|exists:sales,id',
             'payment_date' => 'required|date_format:d/m/Y',
-            'amount' => ['required', 'numeric', 'min:0', new PaymentCheck($sale)],
+            'amount' => ['required', 'numeric', 'min:0', new PaymentCheck($sale, 'store')],
             'payment_method' => 'required|in:tunai,pindahan_bank,kad_kredit,cek',
             'reference_number' => 'nullable|string',
             'notes' => 'nullable|string',
@@ -198,10 +198,11 @@ class PaymentController extends Controller
      */
     public function update(Request $request, Payment $payment)
     {
+        $sale = $payment->sale;
         $validated = $request->validate([
             'sale_id' => 'required|exists:sales,id',
             'payment_date' => 'required|date_format:d/m/Y',
-            'amount' => 'required|numeric|min:0',
+            'amount' => ['required', 'numeric', 'min:0', new PaymentCheck($sale, 'update')],
             'payment_method' => 'required|in:tunai,pindahan_bank,kad_kredit,cek',
             'reference_number' => 'nullable|string',
             'notes' => 'nullable|string',
