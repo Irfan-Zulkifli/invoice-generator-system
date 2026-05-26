@@ -202,17 +202,18 @@ class PaymentController extends Controller
         $validated = $request->validate([
             'sale_id' => 'required|exists:sales,id',
             'payment_date' => 'required|date_format:d/m/Y',
-            'amount' => ['required', 'numeric', 'min:0', new PaymentCheck($sale, 'update')],
+            'amount' => ['required', 'numeric', 'min:0', new PaymentCheck($sale, 'update', $payment)],
             'payment_method' => 'required|in:tunai,pindahan_bank,kad_kredit,cek',
             'reference_number' => 'nullable|string',
             'notes' => 'nullable|string',
         ]);
 
-        $sale = $payment->sale;
-
         $validated['payment_date'] = Carbon::createFromFormat('d/m/Y', $validated['payment_date'])->format('Y-m-d');
 
         $payment->update($validated);
+
+        $sale->status = $sale->status_after_payment;
+        $sale->save();
 
         return redirect()->route('sales.payments', $sale)->with('success', 'Payments created successfully.');
     }
@@ -224,6 +225,9 @@ class PaymentController extends Controller
     {
         $sale = $payment->sale;
         $payment->delete();
+
+        $sale->status = $sale->status_after_payment;
+        $sale->save();
 
         return response()->json([
             'status' => true,
