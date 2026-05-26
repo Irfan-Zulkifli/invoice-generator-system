@@ -114,11 +114,11 @@
                                         </td>
                                         <td>
                                             @if ($sale->status->value == 'completed')
-                                                <span class="badge badge-pill badge-soft-success font-size-11">{{ ucfirst($sale->status->value) }}</span>
+                                                <span class="badge badge-pill badge-soft-success font-size-11">{{ ucfirst($sale->status->label()) }}</span>
                                             @elseif ($sale->status->value == 'pending')
-                                                <span class="badge badge-pill badge-soft-warning font-size-11">{{ ucfirst($sale->status->value) }}</span>
+                                                <span class="badge badge-pill badge-soft-warning font-size-11">{{ ucfirst($sale->status->label()) }}</span>
                                             @else
-                                                <span class="badge badge-pill badge-soft-danger font-size-11">{{ ucfirst($sale->status->value) }}</span>
+                                                <span class="badge badge-pill badge-soft-danger font-size-11">{{ ucfirst($sale->status->label()) }}</span>
                                             @endif
                                         </td>
                                     </tr>

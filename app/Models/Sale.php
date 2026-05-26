@@ -57,11 +57,12 @@ class Sale extends Model
     public function getStatusAfterPaymentAttribute()
     {
         $totalPayments = $this->payments()->sum('amount');
+        $totalPrice = $this->total_price;
         if ($totalPayments == 0) {
             return 'unpaid';
-        } elseif ($totalPayments > 0) {
+        } elseif ($totalPayments > 0 && $totalPayments < $totalPrice) {
             return 'partially_paid';
-        } else {
+        } elseif ($totalPayments > 0 && $totalPayments == $totalPrice) {
             return 'paid';
         }
 

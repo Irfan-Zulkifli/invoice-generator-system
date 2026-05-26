@@ -22,6 +22,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('products', ProductController::class);
     Route::resource('customers', CustomerController::class);
     Route::resource('sales', SaleController::class);
+    Route::get('sales/{sale}/receipt', [SaleController::class, 'receipt'])->name('sales.receipt');
     Route::resource('payments', PaymentController::class);
     Route::get('sales/{sale}/payments', [PaymentController::class, 'getPaymentsBySale'])->name('sales.payments');
     Route::get('sales/{sale}/payments/create', [PaymentController::class, 'createPaymentRecord'])->name('sales.payments.create');

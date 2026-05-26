@@ -46,6 +46,7 @@ class SaleController extends Controller
                     $deleteUrl = route('sales.destroy', $sale);
                     $viewUrl = route('sales.show', $sale);
                     $paymentUrl = route('sales.payments', $sale);
+                    $receiptUrl = route('sales.receipt', $sale);
 
                     $viewBtn = '<a href="'.$viewUrl.'" class="btn btn-sm btn-secondary waves-effect waves-light" title="Edit">
                                     <i class="bx bx-show-alt"></i>
@@ -71,8 +72,12 @@ class SaleController extends Controller
                                         '.method_field('DELETE').'
                                 </form>';
 
+                    $receipt = '<a href="'.$receiptUrl.'" class="btn btn-sm btn-warning waves-effect waves-light" title="Print Receipt">
+                                    <i class="bx bx-receipt"></i>
+                                </a>';
+
                     // Wrap them in a d-flex container with a gap
-                    return '<div class="d-flex align-items-center gap-2">'.$viewBtn.($sale->status->label() == 'unpaid' ? $editBtn : '').$updatePaymentBtn.$deleteBtn.$deleteForm.'</div>';
+                    return '<div class="d-flex align-items-center gap-2">'.$viewBtn.($sale->status->label() == 'unpaid' ? $editBtn : '').($sale->status->label() == 'paid' ? $receipt : '').$updatePaymentBtn.$deleteBtn.$deleteForm.'</div>';
                 })
                 ->addIndexColumn()
                 ->rawColumns(['actions', 'status'])
@@ -191,5 +196,10 @@ class SaleController extends Controller
             'message' => 'Customer Deleted Successfully.',
             'redirect' => route('customers.index'),
         ]);
+    }
+
+    public function receipt(Sale $sale)
+    {
+        return view('pages.sales.receipt', compact('sale'));
     }
 }

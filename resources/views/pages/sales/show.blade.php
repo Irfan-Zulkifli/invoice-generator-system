@@ -95,9 +95,18 @@
                             <a href="javascript:window.print()" class="btn btn-success waves-effect waves-light me-1">
                                 <i class="fa fa-print"></i> Print
                             </a>
+                            <a href="{{ route('sales.payments', $sale) }}" class="btn btn-warning w-md waves-effect waves-light">
+                                <i class="bx bx-money"></i>
+                                See Payments
+                            </a>
                             @if ($sale->status->label() == 'unpaid')
                                 <a href="{{ route('sales.edit', $sale) }}" class="btn btn-primary w-md waves-effect waves-light">
                                     Edit Sale
+                                </a>
+                            @endif
+                            @if ($sale->status->label() == 'paid')
+                                <a href="{{ route('sales.receipt', $sale) }}" class="btn btn-success w-md waves-effect waves-light">
+                                    Receipt
                                 </a>
                             @endif
                         </div>
