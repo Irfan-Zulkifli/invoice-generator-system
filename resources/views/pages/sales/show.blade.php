@@ -118,6 +118,8 @@
             </div>
         </div>
         <div class="col-lg-4 d-print-none">
+            
+            {{-- 1. PAYMENT HISTORY CARD --}}
             <div class="card">
                 <div class="card-header bg-transparent border-bottom py-3">
                     <h4 class="card-title mb-0">Payment History</h4>
@@ -125,10 +127,8 @@
                 
                 <div class="card-body">
                     <div class="table-responsive">
-                        {{-- Removed table-light header, made table borderless --}}
                         <table class="table table-borderless table-centered align-middle table-nowrap mb-0">
                             <tbody>
-                                {{-- Changed to forelse to handle empty states gracefully --}}
                                 @forelse ($paymentsTable as $pay)
                                     <tr class="border-bottom">
                                         <td>
@@ -158,7 +158,6 @@
                         </table>
                     </div>
 
-                    {{-- Only show the pagination container if there are enough pages --}}
                     @if($paymentsTable->hasPages())
                         <div class="mt-4 pt-3 d-flex justify-content-center">
                             {{ $paymentsTable->links() }}
@@ -166,7 +165,92 @@
                     @endif
                 </div>
             </div>
+
+            <div class="card mt-4">
+                <div class="card-header bg-transparent border-bottom py-3">
+                    <h4 class="card-title mb-0">Activity Log</h4>
+                </div>
+                
+                <div class="card-body" data-simplebar style="max-height: 400px;">
+                    <ul class="verti-timeline list-unstyled mb-0">
+                        @forelse($auditLogs as $log)
+                            <li class="event-list {{ $loop->last ? 'mb-0' : '' }}">
+                                <div class="event-timeline-dot">
+                                    <i class="bx bx-right-arrow-circle text-primary"></i>
+                                </div>
+                                <div class="d-flex">
+                                    <div class="flex-shrink-0 me-3">
+                                        <h5 class="font-size-13 text-muted mb-0">
+                                            {{ $log->created_at->format('d M') }}
+                                        </h5>
+                                        <small class="text-muted">{{ $log->created_at->format('h:i A') }}</small>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div>
+                                            <p class="text-muted mb-1 font-size-13">
+                                                <span class="fw-bold text-dark">{{ $log->causer->name ?? 'System' }}</span>
+                                                
+                                                @if(in_array($log->description, ['created', 'updated', 'deleted']))
+                                                    {{ $log->description }} the {{ strtolower(class_basename($log->subject_type)) }}.
+                                                @else
+                                                    {{ $log->description }}
+                                                @endif
+                                            </p>
+                                            
+                                            {{-- Attribute changes box --}}
+                                            @if(isset($log->properties) && count($log->properties) > 0)
+                                                <div class="mt-2 bg-light p-2 rounded text-muted font-size-12">
+                                                    
+                                                    {{-- 1. UPDATED: Shows Old -> New --}}
+                                                    @if(isset($log->properties['old']) && isset($log->properties['attributes']))
+                                                        @foreach($log->properties['attributes'] as $key => $newValue)
+                                                            @if(isset($log->properties['old'][$key]) && $log->properties['old'][$key] != $newValue)
+                                                                <div class="mb-1">
+                                                                    <span class="fw-semibold text-dark">{{ ucfirst(str_replace('_', ' ', $key)) }}:</span> 
+                                                                    <span class="text-danger text-decoration-line-through">{{ $log->properties['old'][$key] ?? 'empty' }}</span> 
+                                                                    <i class="bx bx-right-arrow-alt mx-1"></i>
+                                                                    <span class="text-success">{{ $newValue ?? 'empty' }}</span>
+                                                                </div>
+                                                            @endif
+                                                        @endforeach
+
+                                                    {{-- 2. CREATED: Shows only New data --}}
+                                                    @elseif(isset($log->properties['attributes']) && !isset($log->properties['old']))
+                                                        @foreach($log->properties['attributes'] as $key => $value)
+                                                            <div class="mb-1">
+                                                                <span class="fw-semibold text-dark">{{ ucfirst(str_replace('_', ' ', $key)) }}:</span> 
+                                                                <span class="text-success">{{ $value ?? 'empty' }}</span>
+                                                            </div>
+                                                        @endforeach
+
+                                                    {{-- 3. DELETED: Shows only Old data --}}
+                                                    @elseif(isset($log->properties['old']) && !isset($log->properties['attributes']))
+                                                        @foreach($log->properties['old'] as $key => $value)
+                                                            <div class="mb-1">
+                                                                <span class="fw-semibold text-dark">{{ ucfirst(str_replace('_', ' ', $key)) }}:</span> 
+                                                                <span class="text-danger text-decoration-line-through">{{ $value ?? 'empty' }}</span>
+                                                            </div>
+                                                        @endforeach
+                                                    @endif
+
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        @empty
+                            <li class="text-muted text-center py-4">
+                                <i class="bx bx-history mb-2 font-size-20"></i><br>
+                                No activity recorded yet.
+                            </li>
+                        @endforelse
+                    </ul>
+                </div>
+            </div>
+
         </div>
+        
     </div>
 @endsection
 @section('scripts')

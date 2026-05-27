@@ -82,11 +82,11 @@
                         <div class="col-sm-6">
                             <script>
                                 document.write(new Date().getFullYear())
-                            </script> © Skote.
+                            </script> © IrfanZul.
                         </div>
                         <div class="col-sm-6">
                             <div class="text-sm-end d-none d-sm-block">
-                                Design & Develop by Themesbrand
+                                Develop By Muhammad Irfan Bin Zulkifli
                             </div>
                         </div>
                     </div>

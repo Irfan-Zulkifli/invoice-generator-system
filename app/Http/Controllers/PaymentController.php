@@ -215,13 +215,20 @@ class PaymentController extends Controller
 
         $validated['payment_date'] = Carbon::createFromFormat('d/m/Y', $validated['payment_date'])->format('Y-m-d');
 
-        $payment->update($validated);
+        $payment->fill($validated);
+
+        $dirtyKeys = array_keys($payment->getDirty());
+        $oldValues = collect($payment->getOriginal())->only($dirtyKeys)->toArray();
+
+        $payment->save(); 
+
+        $newValues = $payment->getChanges();
 
         activity()
             ->performedOn($payment)
             ->withProperties([
-                'attributes' => $payment->getChanges(),
-                'old' => collect($payment->getOriginal())->only(array_keys($payment->getChanges()))->toArray()
+                'attributes' => $newValues,
+                'old' => $oldValues
             ])
             ->log('updated');
 

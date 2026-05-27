@@ -10,6 +10,7 @@ use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Sale;
 use Illuminate\Http\Request;
+use Spatie\Activitylog\Models\Activity;
 use Yajra\DataTables\DataTables;
 use Yajra\DataTables\Html\Builder;
 
@@ -160,7 +161,7 @@ class SaleController extends Controller
      */
     public function show(Sale $sale)
     {
-        $sale->load(['buyer', 'products']);
+        $sale->load(['buyer', 'products', 'payments']);
     
         $title = 'View Sale #' . $sale->id;
         $breadcrumbs = [
@@ -171,7 +172,15 @@ class SaleController extends Controller
 
         $paymentsTable = $sale->payments()->paginate(5);
 
-        return view('pages.sales.show', compact('title', 'breadcrumbs', 'sale', 'paymentsTable'));
+        $saleActivities = Activity::forSubject($sale)->get();
+
+        $paymentActivities = \Spatie\Activitylog\Models\Activity::where('subject_type', \App\Models\Payment::class)
+            ->whereIn('subject_id', $sale->payments->pluck('id'))
+            ->get();
+
+        $auditLogs = $saleActivities->concat($paymentActivities)->sortByDesc('created_at');
+
+        return view('pages.sales.show', compact('title', 'breadcrumbs', 'sale', 'paymentsTable', 'auditLogs'));
     }
 
     /**
