@@ -64,7 +64,7 @@ class PaymentController extends Controller
                                 </form>';
 
                     // Wrap them in a d-flex container with a gap
-                    return '<div class="d-flex align-items-center gap-2">'.$viewBtn.($sale->status->label() == 'unpaid' ? $editBtn : '').$deleteBtn.$deleteForm.'</div>';
+                    return '<div class="d-flex align-items-center gap-2">'.$viewBtn.$editBtn.$deleteBtn.$deleteForm.'</div>';
                 })
                 ->addIndexColumn()
                 ->rawColumns(['actions'])
@@ -89,7 +89,7 @@ class PaymentController extends Controller
             }'
         ]);
 
-        return view('pages.payments.index', compact('title', 'breadcrumbs', 'dataTable', 'button_create'));
+        return view('pages.payments.index', compact('title', 'breadcrumbs', 'dataTable', 'button_create', 'sale'));
     }
 
     public function createPaymentRecord(Sale $sale)
@@ -123,7 +123,12 @@ class PaymentController extends Controller
 
         $validated['recorded_by'] = auth()->user()->id;
 
-        Payment::create($validated);
+        $payment = Payment::create($validated);
+
+        activity()
+            ->performedOn($payment)
+            ->withProperties(['attributes' => $payment->toArray()])
+            ->log('created');
 
         $sale->status = $sale->status_after_payment;
         $sale->save();
@@ -212,6 +217,14 @@ class PaymentController extends Controller
 
         $payment->update($validated);
 
+        activity()
+            ->performedOn($payment)
+            ->withProperties([
+                'attributes' => $payment->getChanges(),
+                'old' => collect($payment->getOriginal())->only(array_keys($payment->getChanges()))->toArray()
+            ])
+            ->log('updated');
+
         $sale->status = $sale->status_after_payment;
         $sale->save();
 
@@ -224,7 +237,13 @@ class PaymentController extends Controller
     public function destroy(Payment $payment)
     {
         $sale = $payment->sale;
+        $paymentData = $payment->toArray();
         $payment->delete();
+
+        activity()
+            ->performedOn($payment)
+            ->withProperties(['attributes' => $paymentData])
+            ->log('deleted');
 
         $sale->status = $sale->status_after_payment;
         $sale->save();

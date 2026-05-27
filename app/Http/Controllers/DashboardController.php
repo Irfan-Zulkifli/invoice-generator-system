@@ -111,6 +111,29 @@ class DashboardController extends Controller
         $monthName = $monthlyCounts->pluck('month_name');
         $monthCount = $monthlyCounts->pluck('total_count');
 
+        // chart for total revenue count by month
+        // sale->payments->sum('amount')
+        $rawRevenueMonthly = Sale::where('sales.user_id', auth()->user()->id)
+                            ->join('payments', 'sales.id', '=', 'payments.sale_id')
+                            ->select(
+                                DB::raw('DATE_FORMAT(payments.payment_date, "%Y-%m") as month_key'),
+                                DB::raw('SUM(payments.amount) as amount')
+                            )
+                            ->groupBy('month_key')
+                            ->get();
+        
+        $revenueMonthly = [];
+
+        $allMonths = $rawRevenueMonthly->pluck('month_key')->toArray(); 
+
+        foreach ($allMonths as $month) {
+            // Search the raw database results for this specific month
+            $revenueInMonth = $rawRevenueMonthly->firstWhere('month_key', $month);
+            
+            // If revenue exists, add it. If not, inject a 0.00
+            $revenueMonthly[] = $revenueInMonth ? (float) $revenueInMonth->amount : 0;
+        }
+        
         // $countSalesByMonth = $saleThisYear->groupBy()
 
         return view('pages.dashboard', compact(
@@ -123,7 +146,8 @@ class DashboardController extends Controller
             'recentSales',
             'monthName',
             'monthCount',
-            'productSeries'
+            'productSeries',
+            'revenueMonthly',
         ));
     }
 }

@@ -19,6 +19,7 @@
     {!! $dataTable->scripts() !!}
     <script>
         $(document).ready(function() {
+            $('.select2').select2();
             $('#btn-filter').on('click', function() {
                 let tableId = Object.keys(window.LaravelDataTables)[0];
                 window.LaravelDataTables[tableId].draw();
@@ -26,6 +27,7 @@
             $('#btn-reset').on('click', function() {
                 $('#start_date').val('');
                 $('#end_date').val('');
+                $("[name='status']").val('');
                 let tableId = Object.keys(window.LaravelDataTables)[0];
                 window.LaravelDataTables[tableId].draw();
             });

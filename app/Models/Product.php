@@ -5,9 +5,13 @@ namespace App\Models;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+// use Spatie\Activitylog\Models\Concerns\LogsActivity;
+// use Spatie\Activitylog\Support\LogOptions;
 
 class Product extends Model
 {
+    // use LogsActivity;
+
     protected $fillable = [
         'name',
         'description',
@@ -31,4 +35,11 @@ class Product extends Model
                     ->withPivot(['quantity', 'unit_price', 'subtotal'])
                     ->withTimeStamps();
     }
+
+    // public function getActivitylogOptions(): LogOptions
+    // {
+    //     return LogOptions::defaults()
+    //             ->logOnly(['name', 'description', 'price', 'creator_id'])
+    //             ->logOnlyDirty();
+    // }
 }

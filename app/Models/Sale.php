@@ -7,9 +7,13 @@ use App\Models\SaleItem;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+// use Spatie\Activitylog\Models\Concerns\LogsActivity;
+// use Spatie\Activitylog\Support\LogOptions;
 
 class Sale extends Model
 {
+    // use LogsActivity;
+
     protected $fillable = [
         'customer_id',
         'user_id',
@@ -68,4 +72,11 @@ class Sale extends Model
         }
 
     }
+
+    // public function getActivitylogOptions(): LogOptions
+    // {
+    //     return LogOptions::defaults()
+    //         ->logOnly(['customer_id', 'user_id', 'status', 'due_date', 'total_amount'])
+    //         ->logOnlyDirty();
+    // }
 }

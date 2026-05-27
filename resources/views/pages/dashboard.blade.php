@@ -154,6 +154,15 @@
                 </div>
             </div><!--end card-->
         </div>
+        <div class="col-xl-6">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title mb-4">Revenue by month</h4>
+                    
+                    <div id="revenue-chart" data-colors='["--bs-success","--bs-primary", "--bs-danger"]' class="apex-charts" dir="ltr"></div>                                      
+                </div>
+            </div><!--end card-->
+        </div>
     </div>
 @endsection
 
@@ -312,6 +321,74 @@
 
         var productChart = new ApexCharts(document.querySelector('#product_chart'), optionProduct);
         productChart.render();
+
+        var lineOptions = {
+            series: [
+                {
+                    name: 'Revenue',
+                    data: @json($revenueMonthly), 
+                },
+            ],
+            chart: {
+                height: 350,
+                type: 'line',
+                zoom: { enabled: false },
+                toolbar: { show: false }
+            },
+            colors: ['#556ee6'],
+            dataLabels: {
+                enabled: false,
+            },
+            stroke: {
+                width: 3,
+                curve: 'straight',
+            },
+            
+            // 👇 1. ADD MARKERS TO FIX THE INVISIBLE 1-POINT CHART 👇
+            markers: {
+                size: 6, // Forces a visible dot on the line
+                colors: ['#556ee6'],
+                strokeColors: '#fff',
+                strokeWidth: 2,
+                hover: {
+                    size: 8
+                }
+            },
+            
+            // 👇 2. ADD TOOLTIP TO FORMAT AS CURRENCY 👇
+            tooltip: {
+                y: {
+                    formatter: function (val) {
+                        return "RM " + parseFloat(val).toFixed(2);
+                    }
+                }
+            },
+            
+            grid: {
+                borderColor: '#f1f1f1',
+                row: {
+                    colors: ['transparent', 'transparent'],
+                    opacity: 0.5,
+                },
+            },
+            yaxis: {
+                title: {
+                    text: 'Revenue (RM)',
+                    style: {
+                        fontWeight: '500'
+                    }
+                },
+            },
+            xaxis: {
+                categories: @json($monthName), 
+                axisBorder: { show: false },
+                axisTicks: { show: false }
+            },
+        };
+
+        // 👇 3. CHANGE THE VARIABLE NAME SO IT DOES NOT CRASH YOUR BAR CHARTS 👇
+        var revenueChart = new ApexCharts(document.querySelector('#revenue-chart'), lineOptions);
+        revenueChart.render();
     });
 </script>
 @endsection

@@ -25,6 +25,17 @@ class SaleController extends Controller
             'Home' => route('dashboard'),
             'Sales' => route('sales.index'),
         ];
+        $slot = '
+            <div class="col-3">
+                <label class="form-label mb-1">Status</label>
+                <select class="form-control select2" name="status">
+                    <option value="">All</option>
+                    <option value="unpaid">Unpaid</option>
+                    <option value="paid">Paid</option>
+                    <option value="partially_paid">Partially Paid</option>
+                </select>
+            </div>
+        ';
         $button_create = '<a href="'.route('sales.create').'" class="btn btn-primary"><i class="fas fa-plus"></i> Add Sale</a>';
 
         if (request()->ajax()) {
@@ -37,9 +48,16 @@ class SaleController extends Controller
                 $sales->whereDate('created_at', '<=', request('end_date'));
             }
 
+            if (request()->filled('status')) {
+                $sales->where('status', request('status'));
+            }
+
             return DataTables::of($sales)
                 ->editColumn('status', function ($sale) {
                     return $sale->status->label();
+                })
+                ->editColumn('created_at', function ($sale) {
+                    return $sale->created_at->format('d M Y');
                 })
                 ->addColumn('actions', function ($sale) {
                     $editUrl = route('sales.edit', $sale);
@@ -88,16 +106,18 @@ class SaleController extends Controller
             ['data' => 'DT_RowIndex', 'name' => 'DT_RowIndex', 'title' => '#', 'orderable' => false, 'searchable' => false],
             ['data' => 'buyer.name', 'name' => 'buyer.name', 'title' => 'Customer', 'orderable' => false, 'searchable' => false],
             ['data' => 'status', 'name' => 'status', 'title' => 'Status'],
+            ['data' => 'created_at', 'name' => 'created_at', 'title' => 'Created At'],
             ['data' => 'actions', 'name' => 'actions', 'title' => 'Actions', 'orderable' => false, 'searchable' => false],
         ])
             ->ajax([
                 'data' => 'function(d) {
                     d.start_date = $("#start_date").val();
                     d.end_date = $("#end_date").val();
+                    d.status = $("[name=\'status\']").val();
                 }'
             ]);
 
-        return view('pages.sales.index', compact('title', 'breadcrumbs', 'dataTable', 'button_create'));
+        return view('pages.sales.index', compact('title', 'breadcrumbs', 'dataTable', 'button_create', 'slot'));
     }
 
     /**
@@ -125,8 +145,13 @@ class SaleController extends Controller
     public function store(CreateSaleRequest $saleRequest, CreateSaleAction $action)
     {
 
-        $action->execute($saleRequest->validated());
+        $sale = $action->execute($saleRequest->validated());
         
+        activity()
+            ->performedOn($sale)
+            ->withProperties(['attributes' => $sale->toArray()])
+            ->log('created');
+
         return redirect()->route('sales.index')->with('success', 'Sale created successfully!');
     }
 
@@ -179,7 +204,17 @@ class SaleController extends Controller
             ]);
         }
 
+        $oldAttributes = $sale->getOriginal();
+
         $action->execute($sale, $saleRequest->validated());
+
+        activity()
+            ->performedOn($sale)
+            ->withProperties([
+                'attributes' => $sale->getChanges(),
+                'old' => collect($oldAttributes)->only(array_keys($sale->getChanges()))->toArray()
+            ])
+            ->log('updated');
 
         return redirect()->route('sales.index')->with('success', 'Sale updated successfully!');
 
@@ -191,12 +226,18 @@ class SaleController extends Controller
      */
     public function destroy(Sale $sale)
     {
+        $saleData = $sale->toArray();
         $sale->delete();
+
+        activity()
+            ->performedOn($sale)
+            ->withProperties(['attributes' => $saleData])
+            ->log('deleted');
 
         return response()->json([
             'status' => true,
-            'message' => 'Customer Deleted Successfully.',
-            'redirect' => route('customers.index'),
+            'message' => 'Sale Deleted Successfully.',
+            'redirect' => route('sales.index'),
         ]);
     }
 

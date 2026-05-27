@@ -115,7 +115,12 @@ class CustomerController extends Controller
 
         $validate['seller_id'] = auth()->id();
 
-        Customer::create($validate);
+        $customer = Customer::create($validate);
+
+        activity()
+            ->performedOn($customer)
+            ->withProperties(['attributes' => $customer->toArray()])
+            ->log('created');
 
         return redirect()->route('customers.index')->with('success', 'Customer created successfully!');
     }
@@ -164,6 +169,14 @@ class CustomerController extends Controller
 
         $customer->update($validate);
 
+        activity()
+            ->performedOn($customer)
+            ->withProperties([
+                'attributes' => $customer->getChanges(),
+                'old' => collect($customer->getOriginal())->only(array_keys($customer->getChanges()))->toArray()
+            ])
+            ->log('updated');
+
         return redirect()->route('customers.index')->with('success', 'Customer updated successfully!');
     }
 
@@ -172,7 +185,13 @@ class CustomerController extends Controller
      */
     public function destroy(Customer $customer)
     {
+        $customerData = $customer->toArray();
         $customer->delete();
+
+        activity()
+            ->performedOn($customer)
+            ->withProperties(['attributes' => $customerData])
+            ->log('deleted');
 
         return response()->json([
             'status' => true,

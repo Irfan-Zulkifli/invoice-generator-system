@@ -3,6 +3,18 @@
 @section('content')
     @php
         $isShow = isset($isView) && $isView;
+        
+        // Calculate what is owed
+        $totalPrice = $sale->total_price;
+        
+        // If editing, don't count the current payment's amount in the "already paid" total
+        if ($payment->exists) {
+            $totalPaid = $sale->payments()->where('id', '!=', $payment->id)->sum('amount');
+        } else {
+            $totalPaid = $sale->payments()->sum('amount');
+        }
+        
+        $maxAllowed = max(0, $totalPrice - $totalPaid);
     @endphp
     <div class="row">
         <div class="col-xl-12 mx-auto">
@@ -19,6 +31,17 @@
             </div>
                 
                 <div class="card-body">
+                    <div class="alert alert-info border-0 d-flex align-items-center mb-4" role="alert">
+                        <i class="bx bx-info-circle font-size-20 me-3"></i>
+                        <div>
+                            <p class="mb-0">
+                                <strong>Sale #{{ $sale->id }}</strong> 
+                                (Customer: {{ $sale->buyer->name ?? 'N/A' }})<br>
+                                Total Sale Amount: <strong>RM {{ number_format($totalPrice, 2) }}</strong> | 
+                                Outstanding Balance: <strong class="text-danger">RM {{ number_format($maxAllowed, 2) }}</strong>
+                            </p>
+                        </div>
+                    </div>
                     <form method="POST" action="{{ $payment->exists ? route('payments.update', $payment) : route('sales.payments.add', $sale) }}">
                         @csrf
                         @if ($payment->exists)
@@ -72,11 +95,23 @@
                                     <label for="amount" class="form-label">Amount</label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-light">RM</span>
-                                        <input type="number" step="0.01" class="form-control @error('amount') is-invalid @enderror" id="amount" 
-                                            placeholder="0.00" name="amount" value="{{ old('amount', $payment->amount) }}" {{ $isShow ? 'disabled' : '' }}>
+                                        <input type="number" 
+                                            step="0.01" 
+                                            max="{{ $maxAllowed }}" {{-- HTML5 validation --}}
+                                            class="form-control @error('amount') is-invalid @enderror" 
+                                            id="amount" 
+                                            placeholder="0.00" 
+                                            name="amount" 
+                                            value="{{ old('amount', $payment->amount) }}" 
+                                            {{ $isShow ? 'disabled' : '' }}>
+                                            
                                         @error('amount')
                                             <div class="invalid-feedback d-block">{{ $message }}</div>
                                         @enderror
+                                    </div>
+                                    {{-- NEW: Helper Text --}}
+                                    <div class="form-text text-muted mt-1">
+                                        Maximum allowed: RM {{ number_format($maxAllowed, 2) }}
                                     </div>
                                 </div>
                             </div>

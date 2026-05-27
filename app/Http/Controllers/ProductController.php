@@ -115,12 +115,17 @@ class ProductController extends Controller
             'price.numeric' => 'Price must be a number',
         ]);
 
-        Product::create([
+        $product = Product::create([
             'name' => $request->name,
             'description' => $request->description,
             'price' => $request->price,
             'creator_id' => auth()->id(),
         ]);
+
+        activity()
+            ->performedOn($product)
+            ->withProperties(['attributes' => $product->toArray()])
+            ->log('created');
 
         return redirect()->route('products.index')->with('success', 'Product created successfully!');
     }
@@ -172,6 +177,14 @@ class ProductController extends Controller
             'price' => $request->price,
         ]);
 
+        activity()
+            ->performedOn($product)
+            ->withProperties([
+                'attributes' => $product->getChanges(),
+                'old' => collect($product->getOriginal())->only(array_keys($product->getChanges()))->toArray()
+            ])
+            ->log('updated');
+
         return redirect()->route('products.index')->with('success', 'Product updated successfully');
     }
 
@@ -180,7 +193,13 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
+        $productData = $product->toArray();
         $product->delete();
+
+        activity()
+            ->performedOn($product)
+            ->withProperties(['attributes' => $productData])
+            ->log('deleted');
 
         return response()->json([
             'status' => true,
