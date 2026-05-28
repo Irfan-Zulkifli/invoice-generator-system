@@ -28,6 +28,7 @@
                 $('#start_date').val('');
                 $('#end_date').val('');
                 $("[name='status']").val('');
+                $("[name='due_date']").val('');
                 let tableId = Object.keys(window.LaravelDataTables)[0];
                 window.LaravelDataTables[tableId].draw();
             });

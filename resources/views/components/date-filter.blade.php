@@ -42,6 +42,8 @@
 
             {!! $slot ?? '' !!}
 
+            {!! $slot2 ?? '' !!}
+
             {{-- Action Buttons --}}
             <div class="col-12 col-md-auto d-flex gap-2">
                 <button type="button" id="btn-filter" class="btn btn-primary waves-effect waves-light flex-grow-1">

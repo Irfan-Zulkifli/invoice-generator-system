@@ -93,7 +93,7 @@ class Sale extends Model
                     </span>';
         } elseif ($isDueSoon) {
             return '<span class="badge bg-warning font-size-12">
-                <i class="bx bx-time-five me-1"></i>Due in'. $daysUntilDue .'days
+                <i class="bx bx-time-five me-1"></i>Due in '. $daysUntilDue .' days
             </span>';
         } elseif ($isNotDueYet) {
             return '<span class="badge bg-info font-size-12">

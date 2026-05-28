@@ -37,6 +37,19 @@ class SaleController extends Controller
                 </select>
             </div>
         ';
+
+        $slot2 = '
+            <div class="col-12 col-sm-6 col-md-3">
+                <label class="form-label mb-1">Due</label>
+                <select class="form-control select2" name="due_date">
+                    <option value="">All</option>
+                    <option value="overdue">Overdue</option>
+                    <option value="due_in">Due less than 3 days</option>
+                    <option value="not_yet_due">Not yet due</option>
+                </select>
+            </div>
+        ';
+
         $button_create = '<a href="'.route('sales.create').'" class="btn btn-primary"><i class="fas fa-plus"></i> Add Sale</a>';
 
         if (request()->ajax()) {
@@ -51,6 +64,20 @@ class SaleController extends Controller
 
             if (request()->filled('status')) {
                 $sales->where('status', request('status'));
+            }
+
+            if (request()->filled('due_date')) {
+                if (request('due_date') == 'overdue') {
+                    $sales->whereDate('due_date', '<', now())
+                        ->where('status', '!=', 'paid');
+                } elseif (request('due_date') == 'due_in') {
+                    $sales->whereBetween('due_date', [now()->startOfDay(), now()->addDays(3)->endOfDay()])
+                        ->where('status', '!=', 'paid');
+                } elseif (request('due_date') == 'not_yet_due') {
+                    $sales->whereDate('due_date', '>', now()->addDays(3))
+                        ->where('status', '!=', 'paid');
+                }
+                
             }
 
             return DataTables::of($sales)
@@ -121,10 +148,11 @@ class SaleController extends Controller
                     d.start_date = $("#start_date").val();
                     d.end_date = $("#end_date").val();
                     d.status = $("[name=\'status\']").val();
+                    d.due_date = $("[name=\'due_date\']").val();
                 }'
             ]);
 
-        return view('pages.sales.index', compact('title', 'breadcrumbs', 'dataTable', 'button_create', 'slot'));
+        return view('pages.sales.index', compact('title', 'breadcrumbs', 'dataTable', 'button_create', 'slot', 'slot2'));
     }
 
     /**
