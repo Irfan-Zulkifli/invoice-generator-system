@@ -1,9 +1,9 @@
 <div class="card mb-3 border border-light">
     <div class="card-body">
-        <form id="filter-form" class="row gy-2 gx-3 align-items-end">
+        <form id="filter-form" class="row gy-3 gx-3 align-items-end">
             
             {{-- Upgraded Start Date --}}
-            <div class="col-3">
+            <div class="col-12 col-sm-6 col-md-3">
                 <label for="start_date" class="form-label mb-1">Start Date</label>
                 <div class="input-group" id="datepicker-start">
                     <input type="text" 
@@ -22,7 +22,7 @@
             </div>
 
             {{-- Upgraded End Date --}}
-            <div class="col-3">
+            <div class="col-12 col-sm-6 col-md-3">
                 <label for="end_date" class="form-label mb-1">End Date</label>
                 <div class="input-group" id="datepicker-end">
                     <input type="text" 
@@ -40,14 +40,14 @@
                 </div>
             </div>
 
-            {!!  $slot ?? '' !!}
+            {!! $slot ?? '' !!}
 
             {{-- Action Buttons --}}
-            <div class="col-sm-auto">
-                <button type="button" id="btn-filter" class="btn btn-primary waves-effect waves-light">
+            <div class="col-12 col-md-auto d-flex gap-2">
+                <button type="button" id="btn-filter" class="btn btn-primary waves-effect waves-light flex-grow-1">
                     Filter
                 </button>
-                <button type="button" id="btn-reset" class="btn btn-secondary waves-effect waves-light">
+                <button type="button" id="btn-reset" class="btn btn-secondary waves-effect waves-light flex-grow-1">
                     Reset
                 </button>
             </div>

@@ -27,7 +27,7 @@ class SaleController extends Controller
             'Sales' => route('sales.index'),
         ];
         $slot = '
-            <div class="col-3">
+            <div class="col-12 col-sm-6 col-md-3">
                 <label class="form-label mb-1">Status</label>
                 <select class="form-control select2" name="status">
                     <option value="">All</option>
@@ -55,10 +55,15 @@ class SaleController extends Controller
 
             return DataTables::of($sales)
                 ->editColumn('status', function ($sale) {
-                    return $sale->status->label();
+
+                    return '<span class="badge badge-pill badge-soft-'.$sale->status->color().' font-size-12 px-3 py-1">'. ucwords(str_replace('_', ' ', $sale->status->label())) . '</span>';
+
                 })
                 ->editColumn('created_at', function ($sale) {
                     return $sale->created_at->format('d M Y');
+                })
+                ->editColumn('due_date', function ($sale) {
+                    return $sale->due_date->format('d M Y') . '<br>'. $sale->due_label;
                 })
                 ->addColumn('actions', function ($sale) {
                     $editUrl = route('sales.edit', $sale);
@@ -99,7 +104,7 @@ class SaleController extends Controller
                     return '<div class="d-flex align-items-center gap-2">'.$viewBtn.($sale->status->label() == 'unpaid' ? $editBtn : '').($sale->status->label() == 'paid' ? $receipt : '').$updatePaymentBtn.$deleteBtn.$deleteForm.'</div>';
                 })
                 ->addIndexColumn()
-                ->rawColumns(['actions', 'status'])
+                ->rawColumns(['actions', 'status', 'due_date'])
                 ->make(true);
         }
 
@@ -108,6 +113,7 @@ class SaleController extends Controller
             ['data' => 'buyer.name', 'name' => 'buyer.name', 'title' => 'Customer', 'orderable' => false, 'searchable' => false],
             ['data' => 'status', 'name' => 'status', 'title' => 'Status'],
             ['data' => 'created_at', 'name' => 'created_at', 'title' => 'Created At'],
+            ['data' => 'due_date', 'name' => 'due_date', 'title' => 'Payment Due Date'],
             ['data' => 'actions', 'name' => 'actions', 'title' => 'Actions', 'orderable' => false, 'searchable' => false],
         ])
             ->ajax([
