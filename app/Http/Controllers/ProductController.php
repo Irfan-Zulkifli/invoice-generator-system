@@ -37,20 +37,31 @@ class ProductController extends Controller
 
             return DataTables::of($products)
                 ->addColumn('total', function ($product) {
-                    return $product->current_stock;
+                    $isLowStock = $product->current_stock <= $product->min_stock;
+
+                    if ($isLowStock) {
+                        return '<span class="badge bg-danger font-size-12 py-1 px-2">
+                                    <i class="bx bx-error-circle align-middle me-1"></i>' 
+                                    . $product->current_stock . ' (Low Stock)
+                                </span>';
+                    }
+
+                    return '<span class="badge bg-success font-size-12 py-1 px-2">' 
+                            . $product->current_stock . '
+                            </span>';
                 })
                 ->addColumn('actions', function ($product) {
                     $editUrl = route('products.edit', $product);
                     $deleteUrl = route('products.destroy', $product);
 
                     $addStock = '
-                        <button class="btn btn-sm btn-success waves-effect waves-light" title="Add Stock" data-bs-toggle="modal" data-bs-target="#addStockModal" data-id="'. $product->id .'">
+                        <button class="btn btn-sm btn-success waves-effect waves-light" title="Add Stock" data-bs-toggle="modal" data-bs-target="#addStockModal" data-id="'. $product->id .'" data-title='. $product->name .'>
                             <i class="bx bx-plus-circle"></i>
                         </button>
                     ';
 
                     $decreaseStock = '
-                        <button class="btn btn-sm btn-warning waves-effect waves-light" title="Decrease Stock" data-bs-toggle="modal" data-bs-target="#decreaseStockModal" data-id="'. $product->id .'">
+                        <button class="btn btn-sm btn-warning waves-effect waves-light" title="Decrease Stock" data-bs-toggle="modal" data-bs-target="#decreaseStockModal" data-id="'. $product->id .'" data-title='. $product->name .'>
                             <i class="bx bx-minus-circle"></i>
                         </button>
                     ';
@@ -75,7 +86,7 @@ class ProductController extends Controller
                     return '<div class="d-flex align-items-center gap-2">'.$addStock.$decreaseStock.$editBtn.$deleteBtn.$deleteForm.'</div>';
                 })
                 ->addIndexColumn()
-                ->rawColumns(['actions'])
+                ->rawColumns(['actions', 'total'])
                 ->make(true);
         }
 

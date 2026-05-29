@@ -146,7 +146,12 @@
         }
 
         $('#addStockModal').on('show.bs.modal', function (event) {
+
             let buttonTarget = $(event.relatedTarget);
+
+            let labelTitle = $('#addStockModalLabel');
+            labelTitle.text('Add Stock');
+            labelTitle.text(labelTitle.text() + ': #' + buttonTarget.data('id'));
 
             let productId = buttonTarget.data('id');
 
@@ -159,6 +164,10 @@
 
         $('#decreaseStockModal').on('show.bs.modal', function (event) {
             let buttonTarget = $(event.relatedTarget);
+
+            let labelTitle = $('#decreaseStockModalLabel');
+            labelTitle.text('Decrease Stock');
+            labelTitle.text(labelTitle.text() + ': #' + buttonTarget.data('id'));
 
             let productId = buttonTarget.data('id');
 
