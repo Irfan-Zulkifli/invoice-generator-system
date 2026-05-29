@@ -16,6 +16,7 @@ class Product extends Model
         'name',
         'description',
         'price',
+        'min_stock',
         'creator_id',
     ];
 
@@ -34,6 +35,18 @@ class Product extends Model
                     ->using(SaleItem::class, 'product_id', 'sale_id')
                     ->withPivot(['quantity', 'unit_price', 'subtotal'])
                     ->withTimeStamps();
+    }
+
+    public function inventoryMovements()
+    {
+        return $this->hasMany(InventoryMovement::class);
+    }
+
+    // This creates a magic "current_stock" attribute you can use anywhere!
+    public function getCurrentStockAttribute()
+    {
+        // Sums up all the +50s and -2s to give you the exact current number
+        return $this->inventoryMovements()->sum('quantity'); 
     }
 
     // public function getActivitylogOptions(): LogOptions

@@ -51,6 +51,27 @@
                         </div>
 
                         <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="min_stock" class="form-label">
+                                        Minimum Stock 
+                                        <i class="bx bx-info-circle text-muted ms-1 cursor-pointer" 
+                                        data-bs-toggle="tooltip" 
+                                        data-bs-placement="top" 
+                                        title="You will receive an alert when the current stock drops to or below this number."></i>
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="number" step="1" class="form-control @error('min_stock') is-invalid @enderror" id="min_stock" 
+                                            placeholder="0" name="min_stock" value="{{ old('min_stock', $product->min_stock ?? 5) }}">
+                                        @error('min_stock')
+                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
                             <div class="col-md-12">
                                 <div class="mb-4">
                                     <label for="description" class="form-label">Description <span class="text-muted fw-normal">(Optional)</span></label>

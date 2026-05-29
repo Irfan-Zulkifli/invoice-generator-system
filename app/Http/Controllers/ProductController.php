@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\InventoryMovement;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -22,7 +23,7 @@ class ProductController extends Controller
         ];
         $button_create = '<a href="'.route('products.create').'" class="btn btn-primary"><i class="fas fa-plus"></i> Create Product</a>';
 
-        $products = Product::with('creator')->where('creator_id', auth()->id())->get();
+        $products = Product::with('creator', 'inventoryMovements')->where('creator_id', auth()->id())->get();
 
         if (request()->ajax()) {
             $products = Product::with('creator')->where('creator_id', auth()->id());
@@ -35,9 +36,24 @@ class ProductController extends Controller
             }
 
             return DataTables::of($products)
+                ->addColumn('total', function ($product) {
+                    return $product->current_stock;
+                })
                 ->addColumn('actions', function ($product) {
                     $editUrl = route('products.edit', $product);
                     $deleteUrl = route('products.destroy', $product);
+
+                    $addStock = '
+                        <button class="btn btn-sm btn-success waves-effect waves-light" title="Add Stock" data-bs-toggle="modal" data-bs-target="#addStockModal" data-id="'. $product->id .'">
+                            <i class="bx bx-plus-circle"></i>
+                        </button>
+                    ';
+
+                    $decreaseStock = '
+                        <button class="btn btn-sm btn-warning waves-effect waves-light" title="Decrease Stock" data-bs-toggle="modal" data-bs-target="#decreaseStockModal" data-id="'. $product->id .'">
+                            <i class="bx bx-minus-circle"></i>
+                        </button>
+                    ';
 
                     // Edit Button (Blue with icon)
                     $editBtn = '<a href="'.$editUrl.'" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
@@ -56,7 +72,7 @@ class ProductController extends Controller
                                 </form>';
 
                     // Wrap them in a d-flex container with a gap
-                    return '<div class="d-flex align-items-center gap-2">'.$editBtn.$deleteBtn.$deleteForm.'</div>';
+                    return '<div class="d-flex align-items-center gap-2">'.$addStock.$decreaseStock.$editBtn.$deleteBtn.$deleteForm.'</div>';
                 })
                 ->addIndexColumn()
                 ->rawColumns(['actions'])
@@ -68,6 +84,8 @@ class ProductController extends Controller
             ['data' => 'name', 'name' => 'name', 'title' => 'Name'],
             ['data' => 'description', 'name' => 'description', 'title' => 'Description'],
             ['data' => 'price', 'name' => 'price', 'title' => 'Price'],
+            ['data' => 'min_stock', 'name' => 'min_stock', 'title' => 'Min Stock'],
+            ['data' => 'total', 'name' => 'total', 'title' => 'Total'],
             ['data' => 'actions', 'name' => 'actions', 'title' => 'Actions', 'orderable' => false, 'searchable' => false],
         ])
             ->ajax([
@@ -106,6 +124,7 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric',
+            'min_stock' => 'nullable|numeric'
         ], [
             'name.required' => 'Product name is required',
             'name.string' => 'Product name must be a string',
@@ -113,12 +132,14 @@ class ProductController extends Controller
             'description.string' => 'Description must be a string',
             'price.required' => 'Price is required',
             'price.numeric' => 'Price must be a number',
+            'min_stock.numeric' => 'Minimum stock must be a number',
         ]);
 
         $product = Product::create([
             'name' => $request->name,
             'description' => $request->description,
             'price' => $request->price,
+            'min_stock' => $request->min_stock,
             'creator_id' => auth()->id(),
         ]);
 
@@ -162,6 +183,7 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric',
+            'min_stock' => 'nullable|numeric'
         ], [
             'name.required' => 'Product name is required',
             'name.string' => 'Product name must be a string',
@@ -169,12 +191,14 @@ class ProductController extends Controller
             'description.string' => 'Description must be a string',
             'price.required' => 'Price is required',
             'price.numeric' => 'Price must be a number',
+            'min_stock.numeric' => 'Minimum stock must be a number',
         ]);
 
         $product->update([
             'name' => $request->name,
             'description' => $request->description,
             'price' => $request->price,
+            'min_stock' => $request->min_stock,
         ]);
 
         activity()
@@ -206,5 +230,65 @@ class ProductController extends Controller
             'message' => 'Product Deleted Successfully.',
             'redirect' => route('products.index'),
         ]);
+    }
+
+    public function addStock(Request $request)
+    {
+        $validated = $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'quantity' => 'required|integer|min:1',
+            'notes' => 'nullable|string',
+        ], [
+            'product_id.required' => 'Product ID is required',
+            'product_id.exists' => 'We could not find a product matching that ID.',
+            'quantity.required' => 'Quantity to be added is required',
+            'quantity.integer' => 'Quantity must be a number',
+            'quantity.min' => 'You must add at least 1 item',
+        ]);
+
+        $inventoryMovement = InventoryMovement::create([
+            'product_id' => $validated['product_id'],
+            'user_id' => auth()->id(),
+            'movement_type' => 'add',
+            'quantity' => $validated['quantity'],
+            'reference_notes' => $validated['notes']
+        ]);
+
+        activity()
+            ->performedOn($inventoryMovement)
+            ->withProperties(['attributes' => $inventoryMovement->toArray()])
+            ->log('added');
+
+        return redirect()->back()->with('success', 'Successfully added the product stock.');
+    }
+
+    public function decreaseStock(Request $request)
+    {
+        $validated = $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'quantity' => 'required|integer|min:1',
+            'notes' => 'nullable|string',
+        ], [
+            'product_id.required' => 'Product ID is required',
+            'product_id.exists' => 'We could not find a product matching that ID.',
+            'quantity.required' => 'Quantity to be decrease is required',
+            'quantity.integer' => 'Quantity must be a number',
+            'quantity.min' => 'You must decrease at least 1 item',
+        ]);
+
+        $inventoryMovement = InventoryMovement::create([
+            'product_id' => $validated['product_id'],
+            'user_id' => auth()->id(),
+            'movement_type' => 'decrease',
+            'quantity' => $validated['quantity'] * -1,
+            'reference_notes' => $validated['notes']
+        ]);
+
+        activity()
+            ->performedOn($inventoryMovement)
+            ->withProperties(['attributes' => $inventoryMovement->toArray()])
+            ->log('decreased');
+
+        return redirect()->back()->with('success', 'Successfully decreased the product stock.');
     }
 }

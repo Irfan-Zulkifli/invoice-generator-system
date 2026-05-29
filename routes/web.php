@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\InventoryMovementController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
@@ -20,6 +21,8 @@ Route::middleware('auth')->group(function () {
 
     // Products routes
     Route::resource('products', ProductController::class);
+    Route::post('products/{product_id}/add-stock', [ProductController::class, 'addStock'])->name('products.addStock');
+    Route::post('products/{product_id}/decrease-stock', [ProductController::class, 'decreaseStock'])->name('products.decrease-stock');
     Route::resource('customers', CustomerController::class);
     Route::resource('sales', SaleController::class);
     Route::get('sales/{sale}/receipt', [SaleController::class, 'receipt'])->name('sales.receipt');

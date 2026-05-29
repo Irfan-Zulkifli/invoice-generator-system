@@ -40,7 +40,7 @@ class SaleController extends Controller
 
         $slot2 = '
             <div class="col-12 col-sm-6 col-md-3">
-                <label class="form-label mb-1">Due</label>
+                <label class="form-label mb-1">Due (for not paid yet)</label>
                 <select class="form-control select2" name="due_date">
                     <option value="">All</option>
                     <option value="overdue">Overdue</option>

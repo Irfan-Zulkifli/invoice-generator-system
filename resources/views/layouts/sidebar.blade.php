@@ -24,7 +24,7 @@
                 <li class="{{ request()->routeIs('products.*') ? 'mm-active' : '' }}">
                     <a href="{{ route('products.index') }}" class="waves-effect">
                         <i class="bx bx-cart"></i>
-                        <span key="t-chat">Product</span>
+                        <span key="t-chat">Product List</span>
                     </a>
                 </li>
 
