@@ -42,10 +42,8 @@ class Product extends Model
         return $this->hasMany(InventoryMovement::class);
     }
 
-    // This creates a magic "current_stock" attribute you can use anywhere!
     public function getCurrentStockAttribute()
     {
-        // Sums up all the +50s and -2s to give you the exact current number
         return $this->inventoryMovements()->sum('quantity'); 
     }
 

@@ -23,6 +23,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('products', ProductController::class);
     Route::post('products/{product_id}/add-stock', [ProductController::class, 'addStock'])->name('products.addStock');
     Route::post('products/{product_id}/decrease-stock', [ProductController::class, 'decreaseStock'])->name('products.decrease-stock');
+    Route::get('products/{product_id}/get-product_quantity', [ProductController::class, 'getProductQuantity'])->name('products.get-product-quantity');
+
+
     Route::resource('customers', CustomerController::class);
     Route::resource('sales', SaleController::class);
     Route::get('sales/{sale}/receipt', [SaleController::class, 'receipt'])->name('sales.receipt');

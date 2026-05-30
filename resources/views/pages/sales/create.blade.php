@@ -273,6 +273,10 @@
                                 <td>
                                     <input type="number" name="quantity[]" value=""
                                         class="form-control @error('quantity[]') is-invalid @enderror">
+                                        
+                                    <small class="form-text stock-indicator text-muted d-block mt-1" style="font-size: 0.75rem;">
+                                        Select a product to view stock
+                                    </small>
                                 </td>
                                 <td class="text-center">
                                     <button type="button" class="btn btn-sm btn-soft-danger waves-effect waves-light"
@@ -397,10 +401,71 @@
                 rowTarget.remove();
             }
         }
+
+        function getProductQuantity (productId, elem) {
+
+            if (!productId) return;
+
+            let baseRoute = "{{ route('products.get-product-quantity', '__ID__') }}";
+
+            let fetchUrl = baseRoute.replace('__ID__', productId);
+
+            fetch(fetchUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    let tdNow = elem.closest('td');
+                    let tdNext = tdNow.next('td');
+                    let inputQuantity = tdNext.find("input[name='quantity[]']");
+                    let stockMessage = tdNext.find('.stock-indicator');
+
+                    let available = data.product_quantity;
+
+                    if (available <= 0) {
+                        stockMessage.text('❌ Out of Stock')
+                            .removeClass('text-muted text-success')
+                            .addClass('text-danger fw-bold');
+                        inputQuantity.attr({
+                            'min': 0,
+                            'max': 0,
+                        });
+                        
+                    } else if (available <= 5) {
+                        stockMessage.text(`⚠️ Only ${available} units left!`)
+                            .removeClass('text-muted text-success')
+                            .addClass('text-danger fw-bold');
+                        inputQuantity.attr({
+                            'min': 1,
+                            'max': available,
+                        });
+                    } else {
+                        stockMessage.text(`✨ ${available} units available`)
+                                    .removeClass('text-muted text-danger fw-bold')
+                                    .addClass('text-success');
+                        inputQuantity.attr({
+                            'min': 1,
+                            'max': available,
+                        });
+                    }
+                    
+                    
+                })
+                .catch(error => console.error('Fetch error:', error));
+        }
+        
     </script>
     <script>
         $(document).ready(function() {
             $('#select2').select2();
+            $('tbody').on('change', "select[name='product_id[]']", function () {
+                let selectedId = $(this).val();
+            
+                getProductQuantity(selectedId, $(this));
+            });
         });
     </script>
 @endsection

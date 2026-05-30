@@ -265,12 +265,15 @@ class ProductController extends Controller
             'reference_notes' => $validated['notes']
         ]);
 
+        $inventoryMovement->save();
+
         activity()
             ->performedOn($inventoryMovement)
             ->withProperties(['attributes' => $inventoryMovement->toArray()])
             ->log('added');
 
         return redirect()->back()->with('success', 'Successfully added the product stock.');
+        
     }
 
     public function decreaseStock(Request $request)
@@ -287,13 +290,24 @@ class ProductController extends Controller
             'quantity.min' => 'You must decrease at least 1 item',
         ]);
 
-        $inventoryMovement = InventoryMovement::create([
+        $product = Product::findOrFail($validated['product_id']);
+        $currentStockNum = $product->current_stock;
+
+        $inventoryMovement = new InventoryMovement;
+
+        $inventoryMovement->fill([
             'product_id' => $validated['product_id'],
             'user_id' => auth()->id(),
-            'movement_type' => 'decrease',
+            'movement_type' => 'add',
             'quantity' => $validated['quantity'] * -1,
             'reference_notes' => $validated['notes']
         ]);
+
+        if (($currentStockNum - $validated['quantity']) < 0) {
+            return redirect()->back()->with('error', 'You cannot decrease stock below zero! Current stock is only ' . $currentStockNum);
+        }
+
+        $inventoryMovement->save();
 
         activity()
             ->performedOn($inventoryMovement)
@@ -301,5 +315,18 @@ class ProductController extends Controller
             ->log('decreased');
 
         return redirect()->back()->with('success', 'Successfully decreased the product stock.');
+    }
+
+    public function getProductQuantity($productId) {
+
+        $product = Product::findOrFail($productId);
+
+        $productMinusSelected = Product::where('id', '!=', $product->id)->get();
+
+        return response()->json([
+            'status' => 'success',
+            'product_quantity' => $product->current_stock,
+            'product_minus_selected' => $productMinusSelected,
+        ]);
     }
 }
