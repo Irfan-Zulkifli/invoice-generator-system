@@ -202,7 +202,7 @@
                                                 <div class="mt-2 bg-light p-2 rounded text-muted font-size-12">
                                                     
                                                     {{-- 1. UPDATED: Shows Old -> New --}}
-                                                    @if(isset($log->properties['old']) && isset($log->properties['attributes']))
+                                                    @if(isset($log->properties['old']) && isset($log->properties['attributes']) && (!isset($log->properties['attributes']['attached_products']) && !isset($log->properties['attributes']['updated_products']) && !isset($log->properties['attributes']['detached_products'])))
                                                         @foreach($log->properties['attributes'] as $key => $newValue)
                                                             @if(isset($log->properties['old'][$key]) && $log->properties['old'][$key] != $newValue)
                                                                 <div class="mb-1">
@@ -215,7 +215,7 @@
                                                         @endforeach
 
                                                     {{-- 2. CREATED: Shows only New data --}}
-                                                    @elseif(isset($log->properties['attributes']) && !isset($log->properties['old']))
+                                                    @elseif(isset($log->properties['attributes']) && !isset($log->properties['old']) && (!isset($log->properties['attributes']['attached_products']) && !isset($log->properties['attributes']['updated_products']) && !isset($log->properties['attributes']['detached_products'])))
                                                         @foreach($log->properties['attributes'] as $key => $value)
                                                             <div class="mb-1">
                                                                 <span class="fw-semibold text-dark">{{ ucfirst(str_replace('_', ' ', $key)) }}:</span> 
@@ -224,15 +224,36 @@
                                                         @endforeach
 
                                                     {{-- 3. DELETED: Shows only Old data --}}
-                                                    @elseif(isset($log->properties['old']) && !isset($log->properties['attributes']))
+                                                    @elseif(isset($log->properties['old']) && !isset($log->properties['attributes']) && (!isset($log->properties['attributes']['attached_products']) && !isset($log->properties['attributes']['updated_products']) && !isset($log->properties['attributes']['detached_products'])))
                                                         @foreach($log->properties['old'] as $key => $value)
                                                             <div class="mb-1">
                                                                 <span class="fw-semibold text-dark">{{ ucfirst(str_replace('_', ' ', $key)) }}:</span> 
                                                                 <span class="text-danger text-decoration-line-through">{{ $value ?? 'empty' }}</span>
                                                             </div>
                                                         @endforeach
+                                                    @else
+                                                        @foreach($log->properties['attributes']['attached_products'] as $productDetails)
+                                                            <div class="mb-1">
+                                                                <span class="fw-semibold text-dark">Attached Product ID: {{ $productDetails['product_id'] }}</span> 
+                                                                <br>
+                                                                <span class="fw-semibold text-dark">Quantity: {{ $productDetails['quantity'] }}</span> 
+                                                            </div>
+                                                        @endforeach
+                                                        @foreach($log->properties['attributes']['updated_products'] as $productDetails)
+                                                            <div class="mb-1">
+                                                                <span class="fw-semibold text-dark">Updated Product ID: {{ $productDetails['product_id'] }}</span> 
+                                                                <br>
+                                                                <span class="fw-semibold text-dark">Quantity: {{ $productDetails['quantity'] }}</span> 
+                                                            </div>
+                                                        @endforeach
+                                                        @foreach($log->properties['attributes']['detached_products'] as $productDetails)
+                                                            <div class="mb-1">
+                                                                <span class="fw-semibold text-dark">Detached Product ID: {{ $productDetails['product_id'] }}</span> 
+                                                                <br>
+                                                                <span class="fw-semibold text-dark">Quantity: {{ $productDetails['quantity'] }}</span> 
+                                                            </div>
+                                                        @endforeach
                                                     @endif
-
                                                 </div>
                                             @endif
                                         </div>

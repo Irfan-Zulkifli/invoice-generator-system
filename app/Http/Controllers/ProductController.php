@@ -321,12 +321,10 @@ class ProductController extends Controller
 
         $product = Product::findOrFail($productId);
 
-        $productMinusSelected = Product::where('id', '!=', $product->id)->get();
-
         return response()->json([
             'status' => 'success',
             'product_quantity' => $product->current_stock,
-            'product_minus_selected' => $productMinusSelected,
+            'product_selected_id' => $product->id,
         ]);
     }
 }

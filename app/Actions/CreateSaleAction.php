@@ -48,7 +48,51 @@ class CreateSaleAction {
 
             }
 
-            $sale->products()->sync($syncData);
+            $changes = $sale->products()->sync($syncData);
+
+            $logProperties = [
+                'attached_products' => [],
+                'updated_products' => [],
+                'detached_products' => [],
+            ];
+
+            $summaryDescription = [];
+
+            if (!empty($changes['attached'])) {
+                foreach ($changes['attached'] as $productId) {
+                    $qty = $syncData[$productId]['quantity'];
+                    $logProperties['attached_products'][] = ['product_id' => $productId, 'quantity' => $qty];
+                }
+                $summaryDescription[] = "Added " . count($changes['attached']) . " new product line items";
+            }
+
+            if (!empty($changes['updated'])) {
+                foreach ($changes['updated'] as $productId) {
+                    $qty = $syncData[$productId]['quantity'];
+                    $logProperties['updated_products'][] = ['product_id' => $productId, 'quantity' => $qty];
+                }
+                $summaryDescription[] = "Updated quantities for " . count($changes['updated']) . " products";
+            }
+
+            if (!empty($changes['detached'])) {
+                foreach ($changes['detached'] as $productId) {
+                    $logProperties['detached_products'][] = ['product_id' => $productId];
+                }
+                $summaryDescription[] = "Removed " . count($changes['detached']) . " items from order";
+            }
+
+            $hasChanges = !empty($changes['attached']) || !empty($changes['updated']) || !empty($changes['detached']);
+
+            if ($hasChanges) {
+                activity()
+                    ->performedOn($sale)
+                    ->causedBy(auth()->user())
+                    ->withProperties([
+                        'attributes' => $logProperties,
+                        'raw_sync_receipt' => $changes,
+                    ])
+                    ->log("Added sale order details: " . implode(', ', $summaryDescription));
+            }
 
             return $sale;
 

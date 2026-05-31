@@ -128,7 +128,7 @@
                         <template id="existingCustomerTemplate">
                             <div class="mb-3">
                                 <label class="form-label">Select Customer</label>
-                                <select class="form-control select2 @error('customer_id') is-invalid @enderror"
+                                <select class="form-control select2_customer @error('customer_id') is-invalid @enderror"
                                     name="customer_id">
                                     <option value="">Select Customer</option>
                                     @foreach ($existingCustomers as $customer)
@@ -195,6 +195,9 @@
                                                     @error("quantity.$index")
                                                         <div class="invalid-feedback">{{ $message }}</div>
                                                     @enderror
+                                                    <small class="form-text stock-indicator text-muted d-block mt-1" style="font-size: 0.75rem;">
+                                                        Select a product to view stock
+                                                    </small>
                                                 </td>
                                                 <td class="text-center">
                                                     <button type="button"
@@ -233,6 +236,9 @@
                                                     @error("quantity.$index")
                                                         <div class="invalid-feedback">{{ $message }}</div>
                                                     @enderror
+                                                    <small class="form-text stock-indicator text-muted d-block mt-1" style="font-size: 0.75rem;">
+                                                        Select a product to view stock
+                                                    </small>
                                                 </td>
                                                 <td class="text-center">
                                                     <button type="button"
@@ -355,7 +361,7 @@
                 templateArea.appendChild(newItem);
 
                 if (event.target.value === 'yes') {
-                    $('.select2').select2({
+                    $('.select2_customer').select2({
                         placeholder: "Select Customer",
                         allowClear: true,
                         width: '100%'
@@ -376,7 +382,7 @@
             let tbody = document.querySelector('tbody');
             if (tbody.rows.length === 0) {
                 addRowButton();
-            }            
+            }
         });
 
         function addRowButton() {
@@ -391,6 +397,8 @@
                 allowClear: true,
                 width: '100%'
             });
+
+            syncProductDropdowns();
         }
 
         function deleteRowButton(event) {
@@ -452,9 +460,62 @@
                         });
                     }
                     
+                    let currentProducts = @js($products);
+
+                    // console.log(data.product_selected_id);
+
+                    currentProducts = currentProducts.filter(prod => prod.id != data.product_selected_id);
+
+                    console.log(currentProducts);
+                    console.log(@js($products));
+                    
+                    // console.log(currentProducts);
+
                     
                 })
                 .catch(error => console.error('Fetch error:', error));
+        }
+
+        function syncProductDropdowns() {
+            let chosenIds = [];
+
+            $("select[name='product_id[]']").each(function () {
+                let currentVal = $(this).val();
+                if (currentVal) {
+                    chosenIds.push(currentVal);
+                }
+            });
+
+            $("select[name='product_id[]']").each(function () {
+                // compare option kalau setiap option tu ade chosenIds, kita disable option tu
+                // so skrg, loop option untuk setiap select
+                let currentSelect = $(this);
+                let activeSelection = currentSelect.val();
+
+                currentSelect.find('option').each(function () {
+                    let currentOption = $(this);
+                    let optionVal = currentOption.val();
+
+                    if (chosenIds.includes(optionVal) && optionVal !== activeSelection) {
+                        currentOption.attr('disabled', 'disabled');
+                        if (!currentOption.text().includes('(Already Selected)')) {
+                            currentOption.text(currentOption.text() + ' (Already Selected)');
+                        }
+                    } else {
+                        currentOption.removeAttr('disabled');
+                        currentOption.text(currentOption.text().replace(' (Already Selected)', ''));
+                    }
+                })
+
+                if (currentSelect.hasClass('select2-hidden-accessible')) {
+                    currentSelect.select2({
+                        placeholder: "Select Product",
+                        allowClear: true,
+                        width: '100%'
+                    });
+                }
+
+            })
         }
         
     </script>
@@ -465,7 +526,29 @@
                 let selectedId = $(this).val();
             
                 getProductQuantity(selectedId, $(this));
+
+                syncProductDropdowns();
             });
+
+            $('tbody select[name="product_id[]"]').each(function() {
+                $(this).select2({
+                    placeholder: "Select Product",
+                    allowClear: true,
+                    width: '100%'
+                });
+                if ($(this).val()) {
+                    $(this).trigger('change');
+                }
+            });
+
+            window.deleteRowButton = function (event) {
+                let target = event ? event.target : window.event.target;
+                let rowTarget = target.closest('tr');
+                if (rowTarget) {
+                    rowTarget.remove();
+                    syncProductDropdowns();
+                }
+            }
         });
     </script>
 @endsection
