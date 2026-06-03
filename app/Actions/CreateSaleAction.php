@@ -3,6 +3,7 @@
 namespace App\Actions;
 
 use App\Models\Customer;
+use App\Models\InventoryMovement;
 use App\Models\Sale;
 use Illuminate\Support\Facades\DB;
 
@@ -47,6 +48,19 @@ class CreateSaleAction {
                 }
 
             }
+
+            // add inventory movement movement_type subtract
+
+            foreach ($syncData as $productId => $details) {
+                $soldQuantity = $details['quantity'];
+                $inventoryMovement = InventoryMovement::create([
+                    'product_id' => $productId,
+                    'user_id' => auth()->id(),
+                    'movement_type' => 'subtract',
+                    'quantity' => $soldQuantity * -1,
+                    'reference_notes' => 'Sale created: #' . $sale->id,
+                ]);
+            } 
 
             $changes = $sale->products()->sync($syncData);
 

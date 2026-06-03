@@ -3,6 +3,7 @@
 namespace App\Actions;
 
 use App\Models\Customer;
+use App\Models\InventoryMovement;
 use App\Models\Sale;
 use Illuminate\Support\Facades\DB;
 
@@ -45,6 +46,65 @@ class UpdateSaleAction {
                     ];
                 }
 
+            }
+
+            $oldQuantities = $sale->products()->pluck('sale_items.quantity', 'products.id')->toArray();
+
+            // 1. Handle Added and Updated products
+            foreach($syncData as $productId => $details) {
+                $newQuantity = $details['quantity'];
+
+                $isExist = array_key_exists($productId, $oldQuantities);
+
+                if ($isExist) {
+                    $oldQty = $oldQuantities[$productId];
+                    $difference = abs($newQuantity - $oldQty);
+
+                    if ($difference > 0) {
+                        if ($newQuantity > $oldQty) {
+                            // Quantity increased -> subtract difference from inventory
+                            InventoryMovement::create([
+                                'product_id' => $productId,
+                                'user_id' => auth()->id(),
+                                'movement_type' => 'subtract',
+                                'quantity' => $difference * -1,
+                                'reference_notes' => 'Sale Updated: #' . $sale->id,
+                            ]);
+                        } else {
+                            // Quantity decreased -> add difference back to inventory
+                            InventoryMovement::create([
+                                'product_id' => $productId,
+                                'user_id' => auth()->id(),
+                                'movement_type' => 'add',
+                                'quantity' => $difference,
+                                'reference_notes' => 'Sale Updated: #' . $sale->id,
+                            ]);
+                        }
+                    }
+                } else {
+                    // Entirely new product added -> subtract full quantity
+                    InventoryMovement::create([
+                        'product_id' => $productId,
+                        'user_id' => auth()->id(),
+                        'movement_type' => 'subtract',
+                        'quantity' => $newQuantity * -1,
+                        'reference_notes' => 'Sale Updated: #' . $sale->id,
+                    ]);
+                }
+            }
+
+            // 2. Handle Removed products (Detached)
+            foreach($oldQuantities as $productId => $oldQty) {
+                if (!array_key_exists($productId, $syncData)) {
+                    // Product completely removed -> add full old quantity back
+                    InventoryMovement::create([
+                        'product_id' => $productId,
+                        'user_id' => auth()->id(),
+                        'movement_type' => 'add',
+                        'quantity' => $oldQty,
+                        'reference_notes' => 'Sale Updated: #' . $sale->id,
+                    ]);
+                }
             }
 
             $changes = $sale->products()->sync($syncData);

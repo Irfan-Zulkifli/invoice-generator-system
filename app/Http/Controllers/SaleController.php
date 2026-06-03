@@ -270,6 +270,18 @@ class SaleController extends Controller
     public function destroy(Sale $sale)
     {
         $saleData = $sale->toArray();
+        
+        // Restore inventory for all products in this sale
+        foreach($sale->products as $product) {
+            \App\Models\InventoryMovement::create([
+                'product_id' => $product->id,
+                'user_id' => auth()->id(),
+                'movement_type' => 'add',
+                'quantity' => $product->pivot->quantity,
+                'reference_notes' => 'Sale Deleted: #' . $sale->id,
+            ]);
+        }
+
         $sale->delete();
 
         activity()

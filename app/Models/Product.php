@@ -44,7 +44,9 @@ class Product extends Model
 
     public function getCurrentStockAttribute()
     {
-        return $this->inventoryMovements()->sum('quantity'); 
+        $add = $this->inventoryMovements()->where('movement_type', 'add')->sum('quantity');
+        $subtract = $this->inventoryMovements()->where('movement_type', 'subtract')->sum('quantity');
+        return $add + $subtract;
     }
 
     // public function getActivitylogOptions(): LogOptions

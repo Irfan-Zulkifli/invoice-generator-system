@@ -417,6 +417,11 @@
             let baseRoute = "{{ route('products.get-product-quantity', '__ID__') }}";
 
             let fetchUrl = baseRoute.replace('__ID__', productId);
+            
+            let saleId = '{{ $sale->exists ? $sale->id : '' }}';
+            if (saleId) {
+                fetchUrl += '?sale_id=' + saleId;
+            }
 
             fetch(fetchUrl)
                 .then(response => {

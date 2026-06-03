@@ -317,13 +317,23 @@ class ProductController extends Controller
         return redirect()->back()->with('success', 'Successfully decreased the product stock.');
     }
 
-    public function getProductQuantity($productId) {
+    public function getProductQuantity($productId, \Illuminate\Http\Request $request) {
 
         $product = Product::findOrFail($productId);
+        $available = $product->current_stock;
+
+        if ($request->has('sale_id') && !empty($request->sale_id)) {
+            $saleItem = \App\Models\SaleItem::where('sale_id', $request->sale_id)
+                                            ->where('product_id', $productId)
+                                            ->first();
+            if ($saleItem) {
+                $available += $saleItem->quantity;
+            }
+        }
 
         return response()->json([
             'status' => 'success',
-            'product_quantity' => $product->current_stock,
+            'product_quantity' => $available,
             'product_selected_id' => $product->id,
         ]);
     }
