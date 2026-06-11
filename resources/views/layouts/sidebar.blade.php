@@ -34,6 +34,13 @@
                         <span key="t-chat">Customer</span>
                     </a>
                 </li>
+
+                <li class="{{ request()->routeIs('settings.*') ? 'mm-active' : '' }}">
+                    <a href="{{ route('settings.index') }}" class="waves-effect">
+                        <i class="bx bxs-cog"></i>
+                        <span key="t-chat">Settings</span>
+                    </a>
+                </li>
             </ul>
         </div>
         <!-- Sidebar -->

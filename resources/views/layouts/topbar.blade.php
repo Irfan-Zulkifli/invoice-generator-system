@@ -3,25 +3,28 @@
                     <div class="d-flex">
                         <!-- LOGO -->
                         <div class="navbar-brand-box">
-                            <a href="{{ url('/') }}" class="logo logo-dark">
+                            {{-- <a href="{{ url('/') }}" class="logo logo-dark">
                                 <span class="logo-sm">
                                     <img src="{{ asset('assets/images/logo.svg') }}" alt="" height="22">
                                 </span>
                                 <span class="logo-lg">
                                     <img src="{{ asset('assets/images/logo-dark.png') }}" alt="" height="17">
                                 </span>
-                            </a>
+                            </a> --}}
 
-                            <a href="{{ url('/') }}" class="logo logo-light">
-                                <span class="logo-sm">
-                                    <img src="{{ asset('assets/images/logo-light.svg') }}" alt=""
-                                        height="22">
+                           <a href="{{ url('/') }}" class="logo logo-light text-decoration-none">
+    
+                            <span class="logo-sm">
+                                <span class="text-white fw-bold d-inline-flex align-items-center justify-content-center bg-primary rounded" style="width: 35px; height: 35px; font-size: 1.2rem;">
+                                    S
                                 </span>
-                                <span class="logo-lg">
-                                    <img src="{{ asset('assets/images/logo-light.png') }}" alt=""
-                                        height="19">
-                                </span>
-                            </a>
+                            </span>
+
+                            <span class="logo-lg text-white fw-bold fs-3">
+                                Sa<span class="text-primary">cker</span>
+                            </span>
+
+                        </a>
                         </div>
 
                         <button type="button" class="btn btn-sm px-3 font-size-16 header-item waves-effect"

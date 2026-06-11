@@ -9,6 +9,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SaleController;
+use App\Http\Controllers\SettingController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->group(function () {
@@ -33,6 +34,11 @@ Route::middleware('auth')->group(function () {
     Route::get('sales/{sale}/payments', [PaymentController::class, 'getPaymentsBySale'])->name('sales.payments');
     Route::get('sales/{sale}/payments/create', [PaymentController::class, 'createPaymentRecord'])->name('sales.payments.create');
     Route::post('sales/{sale}/payments', [PaymentController::class, 'addPaymentRecord'])->name('sales.payments.add');
+
+    // setting route
+    Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
+    Route::post('settings', [SettingController::class, 'store'])->name('settings.store');
+    Route::put('settings/{setting}', [SettingController::class, 'update'])->name('settings.update');
 });
 
 Route::middleware('guest')->group(function () {
