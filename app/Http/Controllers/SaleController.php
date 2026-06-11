@@ -9,7 +9,9 @@ use App\Http\Requests\CreateSaleRequest;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Sale;
+use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Spatie\Activitylog\Models\Activity;
 use Yajra\DataTables\DataTables;
 use Yajra\DataTables\Html\Builder;
@@ -213,8 +215,9 @@ class SaleController extends Controller
             ->get();
 
         $auditLogs = $saleActivities->concat($paymentActivities)->sortByDesc('created_at');
+        $setting = Setting::where('seller_id', Auth::id())->first();
 
-        return view('pages.sales.show', compact('title', 'breadcrumbs', 'sale', 'paymentsTable', 'auditLogs'));
+        return view('pages.sales.show', compact('title', 'breadcrumbs', 'sale', 'paymentsTable', 'auditLogs', 'setting'));
     }
 
     /**
@@ -304,6 +307,7 @@ class SaleController extends Controller
             'Sales' => route('sales.index'),
             'Receipt' => false,
         ];
-        return view('pages.sales.receipt', compact('sale', 'title', 'breadcrumbs'));
+        $setting = Setting::where('seller_id', Auth::id())->first();
+        return view('pages.sales.receipt', compact('sale', 'title', 'breadcrumbs', 'setting'));
     }
 }

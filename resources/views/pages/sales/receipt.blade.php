@@ -8,13 +8,31 @@
                     <div class="invoice-title">
                         <div class="d-flex align-items-start">
                             <div class="flex-grow-1">
+                                
+                                {{-- START: CUSTOM LOGO & ICON --}}
+                                @if(isset($setting) && (!empty($setting->custom_logo) || !empty($setting->custom_icon)))
+                                    <div class="mb-4 d-flex align-items-center">
+                                        @if(!empty($setting->custom_icon))
+                                            <img src="{{ asset('storage/' . $setting->custom_icon) }}" 
+                                                 alt="Company Icon" 
+                                                 class="me-2" 
+                                                 style="height: 50px; object-fit: contain;">
+                                        @endif
+                                        
+                                        @if(!empty($setting->custom_logo))
+                                            <img src="{{ asset('storage/' . $setting->custom_logo) }}" 
+                                                 alt="Company Logo" 
+                                                 style="height: 50px; object-fit: contain;">
+                                        @endif
+                                    </div>
+                                @endif
+                                {{-- END: CUSTOM LOGO & ICON --}}
+
                                 <h3 class="card-title mb-1 fw-bold text-uppercase">Official Receipt</h3>
                                 <p class="text-muted font-size-14">Reference: REC-{{ str_pad($sale->id, 5, '0', STR_PAD_LEFT) }}</p>
                             </div>
                             <div class="flex-shrink-0 text-end">
-                                <div class="mb-2">
-                                    <img src="{{ asset('assets/images/logo-dark.png') }}" alt="logo" height="24" class="d-print-block">
-                                </div>
+                                {{-- Removed the hardcoded logo-dark.png from here to keep it perfectly clean --}}
                                 <span class="badge bg-success font-size-14 mt-2">
                                     FULLY PAID
                                 </span>

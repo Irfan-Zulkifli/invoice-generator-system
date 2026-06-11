@@ -8,6 +8,22 @@
                         <div class="d-flex align-items-start">
                             <div class="flex-grow-1">
                                 <h4 class="card-title mb-4">Sale #{{ $sale->id }}</h4>
+                                @if(isset($setting) && (!empty($setting->custom_logo) || !empty($setting->custom_icon)))
+                                    <div class="mb-4 d-flex align-items-center">
+                                        @if(!empty($setting->custom_icon))
+                                            <img src="{{ asset('storage/' . $setting->custom_icon) }}" 
+                                                alt="Company Icon" 
+                                                class="me-2" 
+                                                style="height: 50px; object-fit: contain;">
+                                        @endif
+                                        
+                                        @if(!empty($setting->custom_logo))
+                                            <img src="{{ asset('storage/' . $setting->custom_logo) }}" 
+                                                alt="Company Logo" 
+                                                style="height: 50px; object-fit: contain;">
+                                        @endif
+                                    </div>
+                                @endif
                             </div>
                             <div class="flex-shrink-0">
                                 <div class="mb-4">
