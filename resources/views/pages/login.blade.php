@@ -8,7 +8,7 @@
                         <div class="col-7">
                             <div class="text-primary p-4">
                                 <h5 class="text-primary">Welcome Back !</h5>
-                                <p>Sign in to continue to Skote.</p>
+                                <p>Sign in to continue to Sacker.</p>
                             </div>
                         </div>
                         <div class="col-5 align-self-end">
@@ -18,20 +18,14 @@
                 </div>
                 <div class="card-body pt-0">
                     <div class="auth-logo">
-                        <a href="index.html" class="auth-logo-light">
-                            <div class="avatar-md profile-user-wid mb-4">
-                                <span class="avatar-title rounded-circle bg-light">
-                                    <img src="assets/images/logo-light.svg" alt="" class="rounded-circle"
-                                        height="34">
-                                </span>
-                            </div>
-                        </a>
-
-                        <a href="index.html" class="auth-logo-dark">
-                            <div class="avatar-md profile-user-wid mb-4">
-                                <span class="avatar-title rounded-circle bg-light">
-                                    <img src="assets/images/logo.svg" alt="" class="rounded-circle" height="34">
-                                </span>
+                        <a href="{{ url('/') }}" class="d-block">
+                            <div class="profile-user-wid mb-4 d-inline-block">
+                                {{-- Dark rounded box so the white text pops and overlaps the header --}}
+                                <div class="bg-dark rounded shadow-sm d-flex align-items-center justify-content-center px-4 py-2">
+                                    <span class="logo-lg text-white fw-bold fs-3">
+                                        Sa<span class="text-primary">cker</span>
+                                    </span>
+                                </div>
                             </div>
                         </a>
                     </div>
@@ -91,13 +85,13 @@
             <div class="mt-5 text-center">
 
                 <div>
-                    <p>Don't have an account ? <a href="auth-register.html" class="fw-medium text-primary"> Signup now </a>
-                    </p>
+                    {{-- <p>Don't have an account ? <a href="auth-register.html" class="fw-medium text-primary"> Signup now </a>
+                    </p> --}}
                     <p>©
                         <script>
                             document.write(new Date().getFullYear())
-                        </script> Skote. Crafted with <i class="mdi mdi-heart text-danger"></i> by
-                        Themesbrand
+                        </script> Irfan. Crafted with <i class="mdi mdi-heart text-danger"></i> by
+                        Muhammad Irfan
                     </p>
                 </div>
             </div>
