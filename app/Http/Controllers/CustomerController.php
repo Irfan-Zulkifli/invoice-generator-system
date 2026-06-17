@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Yajra\DataTables\DataTables;
 use Yajra\DataTables\Html\Builder;
 
@@ -101,7 +103,13 @@ class CustomerController extends Controller
     {
         $validate = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'nullable|email',
+            'email' => ['nullable', 
+                        'email', 
+                        Rule::unique('customers', 'email')
+                            ->where(function ($query) {
+                                return $query->where('seller_id', auth()->id());
+                            })
+                        ],
             'phone' => 'nullable|string|max:10',
             'address' => 'nullable|string',
         ], [
@@ -109,6 +117,7 @@ class CustomerController extends Controller
             'name.string' => 'Customer name must be a string',
             'name.max' => 'Customer name cannot exceed 255 characters',
             'email.email' => 'Email must follow the email format',
+            'email.exists' => 'Email already in used by other customer.',
             'phone.max' => 'Phone Number cannot exceed 9 number. Exclude the "-" sign',
             'address.string' => 'String must be a string',
         ]);
@@ -155,7 +164,14 @@ class CustomerController extends Controller
     {
         $validate = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'nullable|email',
+            'email' => [
+                'nullable',
+                'email',
+                Rule::unique('customers', 'email')
+                     ->where(function ($query) use ($customer) {
+                        return $query->where('seller_id', auth()->id());
+                     })->ignore($customer->id)
+            ],
             'phone' => 'nullable|string|max:10',
             'address' => 'nullable|string',
         ], [
