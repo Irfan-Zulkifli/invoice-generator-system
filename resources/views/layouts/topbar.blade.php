@@ -3,28 +3,19 @@
                     <div class="d-flex">
                         <!-- LOGO -->
                         <div class="navbar-brand-box">
-                            {{-- <a href="{{ url('/') }}" class="logo logo-dark">
-                                <span class="logo-sm">
-                                    <img src="{{ asset('assets/images/logo.svg') }}" alt="" height="22">
-                                </span>
-                                <span class="logo-lg">
-                                    <img src="{{ asset('assets/images/logo-dark.png') }}" alt="" height="17">
-                                </span>
-                            </a> --}}
-
                            <a href="{{ url('/') }}" class="logo logo-light text-decoration-none">
-    
-                            <span class="logo-sm">
-                                <span class="text-white fw-bold d-inline-flex align-items-center justify-content-center bg-primary rounded" style="width: 35px; height: 35px; font-size: 1.2rem;">
-                                    S
+                                {{-- Small Logo (Shows when sidebar is collapsed) --}}
+                                <span class="logo-sm">
+                                    {{-- Using transform: scale() to visually zoom past the invisible padding --}}
+                                    <img src="{{ asset('assets/logos/2.png') }}" alt="Sacker Icon" style="height: 25px; transform: scale(2.3);">
                                 </span>
-                            </span>
 
-                            <span class="logo-lg text-white fw-bold fs-3">
-                                Sa<span class="text-primary">cker</span>
-                            </span>
-
-                        </a>
+                                {{-- Large Logo (Shows when sidebar is expanded) --}}
+                                <span class="logo-lg">
+                                    {{-- Zooming in 2.5x so the blue box fills the space without breaking the header height --}}
+                                    <img src="{{ asset('assets/logos/1.png') }}" alt="Sacker Logo" style="height: 35px; transform: scale(2.5);">
+                                </span>
+                            </a>
                         </div>
 
                         <button type="button" class="btn btn-sm px-3 font-size-16 header-item waves-effect"

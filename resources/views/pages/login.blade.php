@@ -19,13 +19,8 @@
                 <div class="card-body pt-0">
                     <div class="auth-logo">
                         <a href="{{ url('/') }}" class="d-block">
-                            <div class="profile-user-wid mb-4 d-inline-block">
-                                {{-- Dark rounded box so the white text pops and overlaps the header --}}
-                                <div class="bg-dark rounded shadow-sm d-flex align-items-center justify-content-center px-4 py-2">
-                                    <span class="logo-lg text-white fw-bold fs-3">
-                                        Sa<span class="text-primary">cker</span>
-                                    </span>
-                                </div>
+                            <div class="d-inline-block rounded" style="margin-top: -150px;">
+                                <img src="{{ asset('assets/logos/1.png') }}" alt="Sacker Logo" width="120">
                             </div>
                         </a>
                     </div>
