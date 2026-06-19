@@ -4,10 +4,10 @@
     <head>
         
         <meta charset="utf-8" />
-        <title>Login | Skote - Admin & Dashboard Template</title>
+        <title>Login | Sacker - Sales Tracking System</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
-        <meta content="Themesbrand" name="author" />
+        <meta content="Sacker - Sales Tracking System" name="description" />
+        <meta content="irfanzul" name="author" />
         <!-- App favicon -->
         <link rel="shortcut icon" href="assets/images/favicon.ico">
 
