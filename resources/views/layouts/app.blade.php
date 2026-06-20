@@ -78,6 +78,20 @@
                 </div>
                 <!-- container-fluid -->
             </div>
+
+            <div id="pwa-install-banner" class="alert alert-primary alert-dismissible fade show position-fixed bottom-0 start-50 translate-middle-x mb-4 shadow-lg w-75 z-3" role="alert" style="display: none; max-width: 400px; z-index: 9999;">
+                <div class="d-flex align-items-center">
+                    <img src="{{ asset('assets/logos/2_192x192.png') }}" alt="Sacker Icon" class="rounded me-3" width="40" height="40">
+                    <div>
+                        <h5 class="font-size-14 mb-1">Install Sacker App</h5>
+                        <p class="mb-0 font-size-12">Add to your home screen for quick access!</p>
+                    </div>
+                </div>
+                <div class="mt-3 text-end">
+                    <button type="button" class="btn btn-sm btn-light me-2" data-bs-dismiss="alert" aria-label="Close">Maybe Later</button>
+                    <button type="button" id="pwa-install-btn" class="btn btn-sm btn-primary">Install Now</button>
+                </div>
+            </div>
             <!-- End Page-content -->
 
             <footer class="footer">
@@ -173,6 +187,23 @@
                     });
             });
         }
+
+        let deferredPrompt;
+        const pwaInstallBanner = document.getElementById('pwa-install-banner');
+        const pwaInstallBtn = document.getElementById('pwa-install-btn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            pwaInstallBanner.style.display = 'block';
+        });
+
+        pwaInstallBtn.addEventListener('click', async () => {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`User response to the install prompt: ${outcome}`);
+            deferredPrompt = null;
+        });
     </script>
 
 
