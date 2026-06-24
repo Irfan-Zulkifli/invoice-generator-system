@@ -188,7 +188,8 @@
         let deferredPrompt;
         const pwaBanner = document.getElementById('pwa-install-banner');
         const pwaInstallBtn = document.getElementById('pwa-install-btn');
-        const isPromptBlocked = localStorage.getItem('pwa_install_rejected');
+        const expiryTimestamp = localStorage.getItem('pwa_install_expiry');
+        const isPromptBlocked = expiryTimestamp && Date.now() < parseInt(expiryTimestamp);
 
         window.addEventListener('beforeinstallprompt', (e) => {
             if (isPromptBlocked === 'true') {
@@ -218,7 +219,8 @@
         });
 
         function handleUserRejection() {
-            localStorage.setItem('pwa_install_rejected', 'true');
+            const thirtyDaysFromNow = Date.now() + (30 * 24 * 60 * 60 * 1000);
+            localStorage.setItem('pwa_install_expiry', thirtyDaysFromNow);
             pwaBanner.style.setProperty('display', 'none', 'important');
         }
     </script>
