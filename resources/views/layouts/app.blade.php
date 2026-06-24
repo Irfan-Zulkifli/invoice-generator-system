@@ -88,7 +88,7 @@
                     </div>
                 </div>
                 <div class="mt-3 text-end">
-                    <button type="button" class="btn btn-sm btn-light me-2" data-bs-dismiss="alert" aria-label="Close">Maybe Later</button>
+                    <button type="button" class="btn btn-sm btn-light me-2" data-bs-dismiss="alert" aria-label="Close" onclick="handleUserRejection()">Maybe Later</button>
                     <button type="button" id="pwa-install-btn" class="btn btn-sm btn-primary">Install Now</button>
                 </div>
             </div>
@@ -179,31 +179,48 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
-                    .then(registration => {
-                        console.log('ServiceWorker registered successfully');
-                    })
-                    .catch(err => {
-                        console.log('ServiceWorker registration failed: ', err);
-                    });
+                    .then(registration => console.log('ServiceWorker registered successfully'))
+                    .catch(err => console.log('ServiceWorker registration failed: ', err));
             });
         }
 
+        // 2. PWA Custom Installation Banner Logic
         let deferredPrompt;
-        const pwaInstallBanner = document.getElementById('pwa-install-banner');
+        const pwaBanner = document.getElementById('pwa-install-banner');
         const pwaInstallBtn = document.getElementById('pwa-install-btn');
+        const isPromptBlocked = localStorage.getItem('pwa_install_rejected');
 
         window.addEventListener('beforeinstallprompt', (e) => {
+            if (isPromptBlocked === 'true') {
+                e.preventDefault();
+                return;
+            }
+
             e.preventDefault();
             deferredPrompt = e;
-            pwaInstallBanner.style.display = 'block';
+            pwaBanner.style.setProperty('display', 'block', 'important');
         });
 
         pwaInstallBtn.addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+
             deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
             console.log(`User response to the install prompt: ${outcome}`);
+
+            if (outcome === 'dismissed') {
+                handleUserRejection();
+            } else {
+                pwaBanner.style.setProperty('display', 'none', 'important');
+            }
+
             deferredPrompt = null;
         });
+
+        function handleUserRejection() {
+            localStorage.setItem('pwa_install_rejected', 'true');
+            pwaBanner.style.setProperty('display', 'none', 'important');
+        }
     </script>
 
 
