@@ -192,7 +192,7 @@
         const isPromptBlocked = expiryTimestamp && Date.now() < parseInt(expiryTimestamp);
 
         window.addEventListener('beforeinstallprompt', (e) => {
-            if (isPromptBlocked === 'true') {
+            if (isPromptBlocked) {
                 e.preventDefault();
                 return;
             }
